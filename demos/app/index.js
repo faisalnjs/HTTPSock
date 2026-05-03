@@ -1,0 +1,13 @@
+const hwsApp = require('../../app');
+
+const app = new hwsApp({
+    server: 'https://ws.faisaln.com/hws/1',
+    cert: './certs/chain.pem',
+    callback: (response => console.log('←', response)),
+    close: (() => console.log('↓ stream closed')),
+    error: (error => console.error('↓', error))
+});
+
+app.stream();
+
+setTimeout(() => app.stop(), 10000);
