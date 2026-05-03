@@ -1,7 +1,7 @@
 {
   "name": "hws",
   "version": "1.0.0",
-  "description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports one sender, one server, multiple clients, no WebSocket protocol.",
+  "description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, senders, and clients, without the WebSocket protocol.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
