@@ -1,7 +1,7 @@
 {
 	"name": "hws",
 	"version": "1.0.0",
-	"description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, senders, and clients, without the WebSocket protocol.",
+	"description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, broadcasters, and clients, without the WebSocket protocol.",
 	"main": "index.js",
 	"scripts": {
 		"test": "npx jest",
@@ -19,7 +19,6 @@
 		"room",
 		"http",
 		"client",
-		"app",
 		"socket",
 		"streaming",
 		"express",
@@ -31,6 +30,7 @@
 		"websockets",
 		"data-stream",
 		"expressjs",
+		"broadcast",
 		"ws",
 		"data-streaming",
 		"hws",

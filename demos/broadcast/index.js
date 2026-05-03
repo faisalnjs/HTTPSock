@@ -35,3 +35,5 @@ setInterval(() => {
   console.log('→', message);
   broadcaster2.send(message);
 }, 3000);
+
+// setTimeout(() => app.stop(), 10000);

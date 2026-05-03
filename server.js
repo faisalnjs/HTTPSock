@@ -38,18 +38,45 @@ function hwsRouter(options = {}) {
     });
     const stream = new HwsStream();
     stream.pipe(res);
+
+    var closed = false;
+
+    stream.on('error', (err) => {
+      if (err && err.code === 'ERR_STREAM_WRITE_AFTER_END') return;
+      console.error('HwsStream error:', err && err.stack ? err.stack : err);
+      try {
+        stream.destroy();
+      } catch (e) { };
+    });
+
+    req.on('close', () => {
+      closed = true;
+      try {
+        if (!stream.writableEnded && !stream.destroyed) stream.end();
+      } catch (e) { };
+    });
+
     const drain = () => {
+      if (closed || stream.destroyed || stream.writableEnded) return;
       while (messageQueue.length) {
-        const ok = stream.write(Buffer.from(messageQueue.shift()));
-        if (!ok) {
-          stream.once('drain', drain);
+        const msg = messageQueue.shift();
+        try {
+          const ok = stream.write(Buffer.from(msg));
+          if (!ok) {
+            stream.once('drain', () => { if (!closed) drain(); });
+            return;
+          };
+        } catch (err) {
+          if (err && err.code === 'ERR_STREAM_WRITE_AFTER_END') return;
+          console.error('Error writing to stream:', err && err.stack ? err.stack : err);
           return;
         };
+        if (closed || stream.destroyed || stream.writableEnded) return;
       };
-      setImmediate(drain);
+      if (!closed) setImmediate(drain);
     };
+
     drain();
-    req.on('close', () => stream.end());
   });
 
   router.post('/', (req, res) => {

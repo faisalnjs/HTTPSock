@@ -42,7 +42,31 @@ class hwsClient {
                 ca: this.cert
             },
             res => {
-                res.on('data', chunk => this.callback(chunk.toString()));
+                var buffer = Buffer.alloc(0);
+                const feed = (chunk) => {
+                    buffer = Buffer.concat([buffer, Buffer.from(chunk)]);
+                    while (true) {
+                        const crlfIdx = buffer.indexOf('\r\n');
+                        if (crlfIdx === -1) break;
+                        const sizeLine = buffer.subarray(0, crlfIdx).toString().trim();
+                        const size = parseInt(sizeLine, 16);
+                        if (Number.isNaN(size)) {
+                            this.err(new Error('Invalid hws size: ' + sizeLine));
+                            return;
+                        };
+                        const frameTotal = crlfIdx + 2 + size + 2;
+                        if (buffer.length < frameTotal) break;
+                        const payloadStart = crlfIdx + 2;
+                        const payload = buffer.subarray(payloadStart, payloadStart + size).toString();
+                        buffer = buffer.subarray(frameTotal);
+                        try {
+                            this.callback(payload);
+                        } catch (err) {
+                            this.err(err);
+                        };
+                    };
+                };
+                res.on('data', feed);
                 res.on('end', () => this.close());
             }
         );

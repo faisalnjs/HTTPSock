@@ -11,12 +11,12 @@ const broadcaster1 = new hwsBroadcast({
 var counter1 = 0;
 setInterval(() => {
   const message = {
-    id: ++counter1,
-    text: `1 #${counter1}`
+    room: 1,
+    text: `#${++counter1}`
   };
   console.log('→', message);
   broadcaster1.send(message);
-}, 3000);
+}, 1000);
 
 
 const broadcaster2 = new hwsBroadcast({
@@ -29,9 +29,11 @@ const broadcaster2 = new hwsBroadcast({
 var counter2 = 0;
 setInterval(() => {
   const message = {
-    id: ++counter2,
-    text: `2 #${counter2}`
+    room: 2,
+    text: `#${++counter2}`
   };
   console.log('→', message);
   broadcaster2.send(message);
-}, 3000);
+}, 1000);
+
+// setTimeout(() => app.stop(), 10000);

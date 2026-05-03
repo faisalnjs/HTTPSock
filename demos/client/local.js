@@ -10,4 +10,4 @@ const app = new hwsClient({
 
 app.stream();
 
-setTimeout(() => app.stop(), 10000);
+// setTimeout(() => app.stop(), 10000);
