@@ -1,25 +1,56 @@
 {
-  "name": "hws",
-  "version": "1.0.0",
-  "description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, senders, and clients, without the WebSocket protocol.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "server": "node demos/server/index.js",
-    "client": "node demos/client/index.js",
-    "app": "node demos/app/index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/faisalnjs/hws.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/faisalnjs/hws/issues"
-  },
-  "homepage": "https://github.com/faisalnjs/hws#readme",
-  "dependencies": {
-    "express": "^5.2.1"
-  }
+	"name": "hws",
+	"version": "1.0.0",
+	"description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, senders, and clients, without the WebSocket protocol.",
+	"main": "index.js",
+	"scripts": {
+		"test": "npx jest",
+		"server": "node demos/server/index.js",
+		"broadcast": "node demos/broadcast/index.js",
+		"client": "node demos/client/index.js"
+	},
+	"exports": {
+		"./server": "./server.js",
+		"./broadcast": "./broadcast.js",
+		"./client": "./client.js"
+	},
+	"keywords": [
+		"nodejs",
+		"room",
+		"http",
+		"client",
+		"app",
+		"socket",
+		"streaming",
+		"express",
+		"node",
+		"server",
+		"sockets",
+		"https",
+		"websocket",
+		"websockets",
+		"data-stream",
+		"expressjs",
+		"ws",
+		"data-streaming",
+		"hws",
+		"rooms"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/faisalnjs/hws.git"
+	},
+	"author": "Faisal N",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/faisalnjs/hws/issues"
+	},
+	"homepage": "https://faisaln.com/packages/hws",
+	"dependencies": {
+		"express": "^5.2.1"
+	},
+	"publishConfig": {
+		"access": "public",
+		"tag": "latest"
+	}
 }

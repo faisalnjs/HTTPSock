@@ -1,10 +1,10 @@
 const express = require('express');
 const http = require('http');
-const hwsServer = require('../../server');
+const hwsServer = require('hws/server');
 
 const app = express();
 const server = http.createServer(app);
-const PORT = 1234;
+const port = 1234;
 
 const rooms = [1, 2, 3, 4];
 
@@ -16,6 +16,6 @@ app.use('/room/5', hwsServer({ maxBody: '5mb' }));
 
 app.get('/', (req, res) => res.send('hws server'));
 
-server.listen(PORT, () => {
-  console.log(`hws://${PORT}`);
+server.listen(port, () => {
+  console.log(`hws://${port}`);
 });

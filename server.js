@@ -54,7 +54,7 @@ function hwsRouter(options = {}) {
 
   router.post('/', (req, res) => {
     const body = req.body.toString();
-    console.log('Received from client:', body);
+    console.log('Received from broadcaster:', body);
     messageQueue.push(body);
     res.type('text').send('OK');
   });

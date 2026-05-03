@@ -1,10 +1,10 @@
 const express = require('express');
 const http = require('http');
-const hwsServer = require('../../server');
+const hwsServer = require('hws/server');
 
 const app = express();
 const server = http.createServer(app);
-const PORT = 1234;
+const port = 1234;
 
 const rooms = [1, 2, 3, 4];
 
@@ -24,6 +24,6 @@ app.get('/room', redirectToRoom, (req, res) => res.send('no room query'));
 
 app.get('/', (req, res) => res.send('hws server'));
 
-server.listen(PORT, () => {
-  console.log(`hws://${PORT}`);
+server.listen(port, () => {
+  console.log(`hws://${port}`);
 });
