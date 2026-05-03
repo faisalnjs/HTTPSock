@@ -1,0 +1,25 @@
+{
+  "name": "hws",
+  "version": "1.0.0",
+  "description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports one sender, one server, multiple clients, no WebSocket protocol.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node demos/server/index.js",
+    "client": "node demos/client/index.js",
+    "app": "node demos/app/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/faisalnjs/hws.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/faisalnjs/hws/issues"
+  },
+  "homepage": "https://github.com/faisalnjs/hws#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
