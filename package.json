@@ -49,6 +49,10 @@
 	"dependencies": {
 		"express": "^5.2.1"
 	},
+	"devDependencies": {
+		"omggif": "^1.0.10",
+		"pngjs": "^6.0.0"
+	},
 	"publishConfig": {
 		"access": "public",
 		"tag": "latest"
