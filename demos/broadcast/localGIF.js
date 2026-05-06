@@ -4,10 +4,10 @@ const hwsBroadcast = require('../../broadcast');
 const { GifReader } = require('omggif');
 const { PNG } = require('pngjs');
 
-const gifPath = path.resolve(__dirname, '..', '..', 'demo.gif');
+const gifPath = path.resolve(__dirname, '..', '..', 'gif-demo.gif');
 
 if (!fs.existsSync(gifPath)) {
-  console.error('demo.gif not found at', gifPath);
+  console.error('gif-demo.gif not found at', gifPath);
   process.exit(1);
 };
 

@@ -125,8 +125,8 @@ describe('Broadcast', () => {
     expect(logSpy).toHaveBeenCalledTimes(6);
     expect(logSpy).toHaveBeenCalledWith("→", { "id": 1, "text": 1 });
     expect(logSpy).toHaveBeenCalledWith("→", { "id": 2, "text": 2 });
-    expect(logSpy).toHaveBeenCalledWith("Received from broadcaster:", "{\"id\":1,\"text\":1}");
-    expect(logSpy).toHaveBeenCalledWith("Received from broadcaster:", "{\"id\":2,\"text\":2}");
+    expect(logSpy).toHaveBeenCalledWith("→ broadcaster:", "{\"id\":1,\"text\":1}");
+    expect(logSpy).toHaveBeenCalledWith("→ broadcaster:", "{\"id\":2,\"text\":2}");
   });
 });
 

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const hwsClient = require('../../client');
 
-const outPath = path.resolve(__dirname, '..', '..', 'demo.png');
+const outPath = path.resolve(__dirname, '..', '..', 'gif-demo.png');
 
 const client = new hwsClient({
   server: 'http://localhost:1234/hws/1',
@@ -12,9 +12,9 @@ const client = new hwsClient({
     if (Buffer.isBuffer(response)) {
       try {
         fs.writeFileSync(outPath, response);
-        console.log(`→ wrote demo.png (${response.length} bytes)`);
+        console.log(`→ wrote gif-demo.png (${response.length} bytes)`);
       } catch (e) {
-        console.error('error writing demo.png', e);
+        console.error('error writing gif-demo.png', e);
       };
     } else {
       console.log('→', response);
