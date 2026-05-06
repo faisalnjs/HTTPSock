@@ -28,6 +28,7 @@ class hwsBroadcast {
     this.callback = options.callback || (response => console.log('←', response));
     this.close = options.close || (() => console.log('↓ stream closed'));
     this.error = options.error || (error => console.error('↓', error));
+    this.auth = options.auth;
     this.err = this.err.bind(this);
     this.request = null;
   };
@@ -61,7 +62,10 @@ class hwsBroadcast {
         method: 'POST',
         headers: {
           'Content-Type': contentType,
-          'Content-Length': body.length
+          'Content-Length': body.length,
+          ...(this.auth ? {
+            Authorization: ((typeof this.auth === 'string') && (this.auth.indexOf(':') === -1)) ? ('Basic ' + this.auth) : ('Basic ' + Buffer.from((typeof this.auth === 'string') ? this.auth : (this.auth.username + ':' + this.auth.password)).toString('base64'))
+          } : {})
         },
         ca: this.cert
       },

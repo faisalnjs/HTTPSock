@@ -1,13 +1,14 @@
 const hwsClient = require('hws/client');
 
-const app = new hwsClient({
+const client = new hwsClient({
     server: 'http://localhost:1234/hws/1',
     cert: './certs/chain.pem',
-    callback: (response => console.log('←', response)),
+    auth: { username: 'client1', password: 'password1' },
+    callback: (response => console.log('→', response)),
     close: (() => console.log('↓ stream closed')),
     error: (error => console.error('↓', error))
 });
 
-app.stream();
+client.stream();
 
-// setTimeout(() => app.stop(), 10000);
+// setTimeout(() => client.stop(), 10000);

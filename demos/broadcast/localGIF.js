@@ -27,7 +27,8 @@ console.log('gif frames:', frameCount, 'size:', gifBuffer.length);
 const broadcaster = new hwsBroadcast({
   server: 'http://localhost:1234/hws/1',
   cert: './certs/chain.pem',
-  callback: (response => console.log('←', response)),
+  auth: { username: 'broadcaster1', password: 'broadcasterPassword1' },
+  callback: (response => console.log('→', response)),
   close: (() => console.log('↓ stream closed')),
   error: (error => console.error(error))
 });
@@ -41,7 +42,7 @@ async function sendFrames() {
     const png = new PNG({ width: frameWidth, height: frameHeight });
     png.data = Buffer.from(rgba);
     const pngBuffer = PNG.sync.write(png);
-    console.log(`→ sending frame ${i + 1}/${frameCount} (${pngBuffer.length} bytes)`);
+    console.log(`← sending frame ${i + 1}/${frameCount} (${pngBuffer.length} bytes)`);
     broadcaster.send(pngBuffer);
     const info = reader.frameInfo(i) || {};
     const delay = (info.delay && (info.delay > 0)) ? info.delay * 10 : 100;

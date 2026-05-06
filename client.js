@@ -15,6 +15,7 @@ class hwsClient {
     }) {
         this.server = options.server || 'https://sub.domain.tld:port/path';
         this.cert = fs.readFileSync(options.cert || './certs/chain.pem');
+        this.auth = options.auth;
         this.callback = options.callback || (response => console.log('←', response));
         this.close = options.close || (() => console.log('↓ stream closed'));
         this.error = options.error || (error => console.error('↓', error));
@@ -39,6 +40,9 @@ class hwsClient {
                 port: url.port || 443,
                 path: url.pathname,
                 method: 'GET',
+                headers: this.auth ? {
+                    Authorization: ((typeof this.auth === 'string') && (this.auth.indexOf(':') === -1)) ? ('Basic ' + this.auth) : ('Basic ' + Buffer.from((typeof this.auth === 'string') ? this.auth : (this.auth.username + ':' + this.auth.password)).toString('base64'))
+                } : undefined,
                 ca: this.cert
             },
             res => {

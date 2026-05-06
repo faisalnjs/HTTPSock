@@ -15,13 +15,14 @@ console.log('image size:', imageBuffer.length, 'path:', imagePath);
 const broadcaster = new hwsBroadcast({
     server: 'http://localhost:1234/hws/1',
     cert: './certs/chain.pem',
-    callback: (response => console.log('←', response)),
+    auth: { username: 'broadcaster1', password: 'broadcasterPassword1' },
+    callback: (response => console.log('→', response)),
     close: (() => console.log('↓ stream closed')),
     error: (error => console.error(error))
 });
 
 async function sendImage() {
-    console.log('→ sending image');
+    console.log('← sending image');
     broadcaster.send(imageBuffer);
     await new Promise(res => setTimeout(res, 200));
     broadcaster.stop();

@@ -17,11 +17,48 @@ class HwsStream extends Transform {
  * Returns the HWS server router.
  *
  * @param {Object} [options]
- * @param {number} [options.maxBody='10mb']
+ * @param {number} [options.maxBody='10mb'] - Maximum allowed body size for POST requests.
+ * @param {boolean} [options.auth=false] - Whether to require authentication for clients and broadcasters.
+ * @param {Array} [options.clients=[]] - List of allowed client credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
+ * @param {Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
  * @returns {Router}
  */
 function hwsRouter(options = {}) {
   const router = Router();
+  const requireAuth = Boolean(options.auth);
+  const allowedClients = options.clients || [];
+  const allowedBroadcasts = options.broadcasts || [];
+
+  const parseBasic = (header) => {
+    if (!header || (typeof header !== 'string')) return null;
+    const parts = header.split(' ');
+    if (parts.length !== 2) return null;
+    if (parts[0] !== 'Basic') return null;
+    try {
+      const decoded = Buffer.from(parts[1], 'base64').toString();
+      const sep = decoded.indexOf(':');
+      if (sep === -1) return null;
+      return { username: decoded.slice(0, sep), password: decoded.slice(sep + 1) };
+    } catch (e) {
+      return null;
+    };
+  };
+
+  const matches = (credentials, list) => {
+    if (!credentials) return false;
+    for (const item of list) {
+      if (!item) continue;
+      if (item.username && item.password) {
+        if ((item.username === credentials.username) && (item.password === credentials.password)) return credentials.username;
+      } else if (Array.isArray(item) && (item.length >= 2)) {
+        if ((item[0] === credentials.username) && (item[1] === credentials.password)) return credentials.username;
+      } else if (typeof item === 'string') {
+        const itemCredentials = item.split(':');
+        if ((itemCredentials[0] === credentials.username) && (itemCredentials[1] === credentials.password)) return credentials.username;
+      };
+    };
+    return false;
+  };
 
   router.use(require('express').raw({
     type: '*/*',
@@ -31,6 +68,13 @@ function hwsRouter(options = {}) {
   const messageQueue = [];
 
   router.get('/', (req, res) => {
+    if (requireAuth) {
+      const credentials = parseBasic(req.headers.authorization);
+      if (matches(credentials, allowedClients) === false) {
+        res.set('WWW-Authenticate', 'Basic realm="hws"');
+        return res.status(401).type('text').send('Unauthorized');
+      };
+    };
     res.set({
       'Content-Type': 'application/octet-stream',
       'Transfer-Encoding': 'chunked',
@@ -80,20 +124,29 @@ function hwsRouter(options = {}) {
   });
 
   router.post('/', (req, res) => {
+    var authenticatedAs = 'broadcaster';
+    if (requireAuth) {
+      const credentials = parseBasic(req.headers.authorization);
+      authenticatedAs = matches(credentials, allowedBroadcasts);
+      if (authenticatedAs === false) {
+        res.set('WWW-Authenticate', 'Basic realm="hws"');
+        return res.status(401).type('text').send('Unauthorized');
+      };
+    };
     const body = req.body;
     const contentType = req.headers['content-type'] || '';
     if (Buffer.isBuffer(body)) {
-      if (contentType && contentType.indexOf('application/json') !== -1) {
-        const s = body.toString();
-        console.log('Received from broadcaster:', s);
+      if (contentType && (contentType.indexOf('application/json') !== -1)) {
+        const string = body.toString();
+        console.log(`→ ${authenticatedAs}:`, string);
         messageQueue.push(body);
       } else {
-        console.log('Received from broadcaster: %s %d bytes', contentType, body.length);
+        console.log(`←→ ${authenticatedAs}: %s (%d bytes)`, contentType, body.length);
         messageQueue.push(body);
       };
     } else {
       const string = (body === undefined || body === null) ? '' : String(body);
-      console.log('Received from broadcaster:', string);
+      console.log(`→ ${authenticatedAs}:`, string);
       messageQueue.push(Buffer.from(string));
     };
     res.type('text').send('OK');

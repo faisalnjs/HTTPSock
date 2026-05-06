@@ -7,16 +7,17 @@ const outPath = path.resolve(__dirname, '..', '..', 'demo.png');
 const client = new hwsClient({
   server: 'http://localhost:1234/hws/1',
   cert: './certs/chain.pem',
+  auth: { username: 'client1', password: 'password1' },
   callback: (response => {
     if (Buffer.isBuffer(response)) {
       try {
         fs.writeFileSync(outPath, response);
-        console.log(`← wrote demo.png (${response.length} bytes)`);
+        console.log(`→ wrote demo.png (${response.length} bytes)`);
       } catch (e) {
         console.error('error writing demo.png', e);
       };
     } else {
-      console.log('←', response);
+      console.log('→', response);
     };
   }),
   close: (() => console.log('↓ stream closed')),
