@@ -80,9 +80,22 @@ function hwsRouter(options = {}) {
   });
 
   router.post('/', (req, res) => {
-    const body = req.body.toString();
-    console.log('Received from broadcaster:', body);
-    messageQueue.push(body);
+    const body = req.body;
+    const contentType = req.headers['content-type'] || '';
+    if (Buffer.isBuffer(body)) {
+      if (contentType && contentType.indexOf('application/json') !== -1) {
+        const s = body.toString();
+        console.log('Received from broadcaster:', s);
+        messageQueue.push(body);
+      } else {
+        console.log('Received from broadcaster: %s %d bytes', contentType, body.length);
+        messageQueue.push(body);
+      };
+    } else {
+      const string = (body === undefined || body === null) ? '' : String(body);
+      console.log('Received from broadcaster:', string);
+      messageQueue.push(Buffer.from(string));
+    };
     res.type('text').send('OK');
   });
 

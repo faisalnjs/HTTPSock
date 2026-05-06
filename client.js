@@ -23,7 +23,7 @@ class hwsClient {
     };
 
     err(error) {
-        if (error === 'ended') {
+        if (error === 'ended' || (error && (error.code === 'ECONNRESET'))) {
             this.close();
         } else {
             this.error(error);
@@ -57,10 +57,32 @@ class hwsClient {
                         const frameTotal = crlfIdx + 2 + size + 2;
                         if (buffer.length < frameTotal) break;
                         const payloadStart = crlfIdx + 2;
-                        const payload = buffer.subarray(payloadStart, payloadStart + size).toString();
+                        const payload = buffer.subarray(payloadStart, payloadStart + size);
                         buffer = buffer.subarray(frameTotal);
+                        var out = payload;
                         try {
-                            this.callback(payload);
+                            const isText = (buf) => {
+                                for (var i = 0; i < buf.length; i++) {
+                                    const b = buf[i];
+                                    if ((b === 9) || (b === 10) || (b === 13)) continue;
+                                    if ((b >= 32) && (b <= 126)) continue;
+                                    return false;
+                                };
+                                return true;
+                            };
+                            if (Buffer.isBuffer(payload) && isText(payload)) {
+                                const s = payload.toString();
+                                try {
+                                    out = JSON.parse(s);
+                                } catch (e) {
+                                    out = s;
+                                };
+                            };
+                        } catch (convErr) {
+                            out = payload;
+                        };
+                        try {
+                            this.callback(out);
                         } catch (err) {
                             this.err(err);
                         };

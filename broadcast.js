@@ -14,7 +14,17 @@ class hwsBroadcast {
     error: ((error) => { console.error('↓', error) })
   }) {
     this.server = options.server || 'https://sub.domain.tld:port/path';
-    this.cert = fs.readFileSync(options.cert || './certs/chain.pem');
+    if (options.cert && Buffer.isBuffer(options.cert)) {
+      this.cert = options.cert;
+    } else if (options.cert && (typeof options.cert === 'string')) {
+      this.cert = fs.readFileSync(options.cert);
+    } else {
+      try {
+        this.cert = fs.readFileSync('./certs/chain.pem');
+      } catch (e) {
+        this.cert = undefined;
+      };
+    };
     this.callback = options.callback || (response => console.log('←', response));
     this.close = options.close || (() => console.log('↓ stream closed'));
     this.error = options.error || (error => console.error('↓', error));
@@ -32,7 +42,17 @@ class hwsBroadcast {
 
   send(data) {
     const url = new URL(this.server);
-    if (typeof data === 'object') data = JSON.stringify(data);
+    var body = data;
+    var contentType = 'application/octet-stream';
+    if (Buffer.isBuffer(data)) {
+      body = data;
+    } else if (typeof data === 'object') {
+      body = Buffer.from(JSON.stringify(data));
+      contentType = 'application/json';
+    } else {
+      body = Buffer.from(String(data));
+      contentType = 'text/plain';
+    };
     this.request = ((url.protocol === 'https:') ? https : http).request(
       {
         hostname: url.hostname,
@@ -40,8 +60,8 @@ class hwsBroadcast {
         path: url.pathname,
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(data)
+          'Content-Type': contentType,
+          'Content-Length': body.length
         },
         ca: this.cert
       },
@@ -52,7 +72,7 @@ class hwsBroadcast {
       }
     );
     this.request.on('error', this.err);
-    this.request.write(data);
+    this.request.write(body);
     this.request.end();
   };
 

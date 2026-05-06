@@ -4,6 +4,8 @@ WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports 
 
 ![Demo](./demo.gif)
 
+![Setup](./setup.png)
+
 ## Demos
 
 Server: [demos/server](./demos/server)
