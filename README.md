@@ -8,15 +8,15 @@ Lightweight wrapper, HTTP chunked responses, continuous streaming, authenticatio
 
 3 main implementations:
 
-- `httpsock/server` - bind `httpsock/server` to an Express app route to convert it into a streaming server endpoint. Accepts POST for sending and GET for streaming.
-- `httpsock/broadcast` - broadcast text, JSON, image, buffer data to a `httpsock/server`.
+- `httpsock/server` - bind `httpsock/server` to an Express.js app route to convert it into a streaming server endpoint. Accepts POST for sending and GET for streaming.
+- `httpsock/broadcast` - broadcast text, JSON, image, buffer data to a `httpsock/server` endpoint.
 - `httpsock/client` - connect to a `httpsock/server` stream endpoint and receive incoming data.
 
 ![Setup](./setup.png)
 
 ## Installation
 
-Install the `httpsock` from NPM:
+Install the `httpsock` package from NPM:
 
 ```powershell
 npm install httpsock
