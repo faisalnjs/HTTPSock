@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const httpsockServer = require('./server');
+const HTTPSockServer = require('./server');
 
 const app = express();
 const server = http.createServer(app);
@@ -20,10 +20,10 @@ describe('Server', () => {
       const rooms = [1, 2, 3, 4];
 
       for (const room of rooms) {
-        app.use(`/room/${room}`, httpsockServer({ maxBody: `${room * 5}mb` }));
+        app.use(`/room/${room}`, HTTPSockServer({ maxBody: `${room * 5}mb` }));
       };
 
-      app.use('/room/5', httpsockServer({ maxBody: '5mb' }));
+      app.use('/room/5', HTTPSockServer({ maxBody: '5mb' }));
 
       function redirectToRoom(req, res, next) {
         const room = req.query.room;
@@ -38,10 +38,10 @@ describe('Server', () => {
   const rooms = [1, 2, 3, 4];
 
   for (const room of rooms) {
-    app.use(`/room/${room}`, httpsockServer({ maxBody: `${room * 5}mb` }));
+    app.use(`/room/${room}`, HTTPSockServer({ maxBody: `${room * 5}mb` }));
   };
 
-  app.use('/room/5', httpsockServer({ maxBody: '5mb' }));
+  app.use('/room/5', HTTPSockServer({ maxBody: '5mb' }));
 
   function redirectToRoom(req, res, next) {
     const room = req.query.room;
@@ -66,12 +66,12 @@ describe('Server', () => {
   });
 });
 
-const httpsockBroadcast = require('httpsock/broadcast');
+const HTTPSockBroadcast = require('httpsock/broadcast');
 
 describe('Broadcast', () => {
   test('create', () => {
     expect(() => {
-      const broadcaster = new httpsockBroadcast({
+      const broadcaster = new HTTPSockBroadcast({
         server: `http://localhost:${port}/room/1`,
         cert: './certs/chain.pem',
         callback: (response => console.log('←', response)),
@@ -87,7 +87,7 @@ describe('Broadcast', () => {
   beforeAll((done) => {
     server.listen(port);
 
-    const broadcaster = new httpsockBroadcast({
+    const broadcaster = new HTTPSockBroadcast({
       server: `http://localhost:${port}/room/1`,
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),
@@ -130,14 +130,14 @@ describe('Broadcast', () => {
   });
 });
 
-const httpsockClient = require('./client');
+const HTTPSockClient = require('./client');
 
 describe('Client', () => {
   var app = null;
 
   test('create', () => {
     expect(() => {
-      app = new httpsockClient({
+      app = new HTTPSockClient({
         server: `http://localhost:${port}/room/1`,
         cert: './certs/chain.pem',
         callback: (response => console.log('←', response)),
@@ -154,7 +154,7 @@ describe('Client', () => {
   beforeAll((done) => {
     server.listen(port);
 
-    app = new httpsockClient({
+    app = new HTTPSockClient({
       server: 'http://localhost:1234/httpsock/1',
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),
@@ -164,7 +164,7 @@ describe('Client', () => {
 
     app.stream();
 
-    const client = new httpsockBroadcast({
+    const client = new HTTPSockBroadcast({
       server: `http://localhost:${port}/room/1`,
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),

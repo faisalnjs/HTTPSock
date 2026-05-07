@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const httpsockServer = require('httpsock/server');
+const HTTPSockServer = require('httpsock/server');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,8 +15,8 @@ const broadcasts = [
   { username: 'broadcaster2', password: 'broadcasterPassword2' }
 ];
 
-app.use('/httpsock/1', httpsockServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
-app.use('/httpsock/2', httpsockServer({ maxBody: '10mb', auth: true, clients, broadcasts }));
+app.use('/httpsock/1', HTTPSockServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
+app.use('/httpsock/2', HTTPSockServer({ maxBody: '10mb', auth: true, clients, broadcasts }));
 
 app.get('/', (req, res) => res.send('httpsock server'));
 

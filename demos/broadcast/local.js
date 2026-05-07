@@ -1,6 +1,6 @@
-const httpsockBroadcast = require('../../broadcast');
+const HTTPSockBroadcast = require('../../broadcast');
 
-const broadcaster1 = new httpsockBroadcast({
+const broadcaster1 = new HTTPSockBroadcast({
   server: 'http://localhost:1234/httpsock/1',
   cert: './certs/chain.pem',
   auth: { username: 'broadcaster1', password: 'broadcasterPassword1' },
@@ -17,7 +17,7 @@ setInterval(() => {
 }, 1000);
 
 
-const broadcaster2 = new httpsockBroadcast({
+const broadcaster2 = new HTTPSockBroadcast({
   server: 'http://localhost:1234/httpsock/2',
   cert: './certs/chain.pem',
   auth: { username: 'broadcaster2', password: 'broadcasterPassword2' },

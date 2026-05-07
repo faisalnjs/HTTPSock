@@ -1,6 +1,6 @@
-const httpsockClient = require('httpsock/client');
+const HTTPSockClient = require('httpsock/client');
 
-const client = new httpsockClient({
+const client = new HTTPSockClient({
     server: 'https://ws.faisaln.com/httpsock/1',
     cert: './certs/chain.pem',
     auth: { username: 'client1', password: 'password1' },

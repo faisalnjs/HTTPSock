@@ -5,7 +5,7 @@ const https = require('https');
 const fs = require('fs');
 const { URL } = require('url');
 
-class httpsockClient {
+class HTTPSockClient {
     constructor(options = {
         server: 'https://sub.domain.tld:port/path',
         cert: './certs/chain.pem',
@@ -105,4 +105,4 @@ class httpsockClient {
     };
 };
 
-module.exports = httpsockClient;
+module.exports = HTTPSockClient;

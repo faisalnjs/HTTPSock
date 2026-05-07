@@ -23,7 +23,7 @@ class HTTPSockStream extends Transform {
  * @param {Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
  * @returns {Router}
  */
-function httpsockRouter(options = {}) {
+function HTTPSockServer(options = {}) {
   const router = Router();
   const requireAuth = Boolean(options.auth);
   const allowedClients = options.clients || [];
@@ -155,4 +155,4 @@ function httpsockRouter(options = {}) {
   return router;
 };
 
-module.exports = httpsockRouter;
+module.exports = HTTPSockServer;

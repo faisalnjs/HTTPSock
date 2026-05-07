@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const httpsockServer = require('httpsock/server');
+const HTTPSockServer = require('httpsock/server');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,10 +18,10 @@ const broadcasts = [
 const rooms = [1, 2, 3, 4];
 
 for (const room of rooms) {
-  app.use(`/room/${room}`, httpsockServer({ maxBody: `${room * 5}mb`, auth: true, clients, broadcasts }));
+  app.use(`/room/${room}`, HTTPSockServer({ maxBody: `${room * 5}mb`, auth: true, clients, broadcasts }));
 };
 
-app.use('/room/5', httpsockServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
+app.use('/room/5', HTTPSockServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
 
 function redirectToRoom(req, res, next) {
   const room = req.query.room;

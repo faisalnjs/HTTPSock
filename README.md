@@ -1,5 +1,4 @@
-
-# HTTP/S WebSockets (httpsock)
+# HTTP/S WebSockets (HTTPSock)
 
 WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, broadcasters, and clients, without the WebSocket protocol.
 
@@ -64,10 +63,10 @@ The server exposes a function that returns an Express `Router`. Example usage in
 
 ```js
 const express = require('express');
-const httpsockRouter = require('httpsock/server');
+const HTTPSockServer = require('httpsock/server');
 
 const app = express();
-app.use('/httpsock', httpsockRouter({
+app.use('/httpsock', HTTPSockServer({
     maxBody: '10mb',        // max POST size
     auth: true,             // require HTTP Basic auth for clients/broadcasters
     clients: ['user:pass'], // credentials format is interchangeable

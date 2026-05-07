@@ -5,7 +5,7 @@ const https = require('https');
 const fs = require('fs');
 const { URL } = require('url');
 
-class httpsockBroadcast {
+class HTTPSockBroadcast {
   constructor(options = {
     server: 'https://sub.domain.tld:port/path',
     cert: './certs/chain.pem',
@@ -85,4 +85,4 @@ class httpsockBroadcast {
   };
 };
 
-module.exports = httpsockBroadcast;
+module.exports = HTTPSockBroadcast;
