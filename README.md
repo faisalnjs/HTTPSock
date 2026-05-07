@@ -1,5 +1,5 @@
 
-# HTTP/S WebSockets (htws)
+# HTTP/S WebSockets (httpsock)
 
 WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, broadcasters, and clients, without the WebSocket protocol.
 
@@ -9,18 +9,18 @@ Lightweight wrapper, HTTP chunked responses, continuous streaming, authenticatio
 
 3 main implementations:
 
-- `htws/server` - bind `htws/server` to an Express app route to convert it into a streaming server endpoint. Accepts POST for sending and GET for streaming.
-- `htws/broadcast` - broadcast text, JSON, image, buffer data to a `htws/server`.
-- `htws/client` - connect to a `htws/server` stream endpoint and receive incoming data.
+- `httpsock/server` - bind `httpsock/server` to an Express app route to convert it into a streaming server endpoint. Accepts POST for sending and GET for streaming.
+- `httpsock/broadcast` - broadcast text, JSON, image, buffer data to a `httpsock/server`.
+- `httpsock/client` - connect to a `httpsock/server` stream endpoint and receive incoming data.
 
 ![Setup](./setup.png)
 
 ## Installation
 
-Install the `htws` from NPM:
+Install the `httpsock` from NPM:
 
 ```powershell
-npm install htws
+npm install httpsock
 ```
 
 Then, import the modules in your Node.js (Express.js for servers) project as needed.
@@ -29,7 +29,7 @@ Note that if the server is running on HTTPS, a certificate chain (whether self-s
 
 ## Local Demo
 
-There are ready-made demos in the [`demos`](demos) folder. To quickly test `htws`, open the following in 3 separate terminal windows:
+There are ready-made demos in the [`demos`](demos) folder. To quickly test `httpsock`, open the following in 3 separate terminal windows:
 
 - Start the demo server:
 
@@ -64,10 +64,10 @@ The server exposes a function that returns an Express `Router`. Example usage in
 
 ```js
 const express = require('express');
-const htwsRouter = require('htws/server');
+const httpsockRouter = require('httpsock/server');
 
 const app = express();
-app.use('/htws', htwsRouter({
+app.use('/httpsock', httpsockRouter({
     maxBody: '10mb',        // max POST size
     auth: true,             // require HTTP Basic auth for clients/broadcasters
     clients: ['user:pass'], // credentials format is interchangeable
@@ -77,8 +77,8 @@ app.use('/htws', htwsRouter({
 app.listen(3000, () => console.log('listening on :3000'));
 ```
 
-- GET /htws (used by clients) keeps the response open and sends framed messages as they arrive.
-- POST /htws (used by broadcasters) accepts a body (any content type). Bodies are queued and delivered to connected clients.
+- GET /httpsock (used by clients) keeps the response open and sends framed messages as they arrive.
+- POST /httpsock (used by broadcasters) accepts a body (any content type). Bodies are queued and delivered to connected clients.
 - If `auth` is enabled the server expects HTTP Basic auth. The `clients` and `broadcasts` arrays define allowed credentials. Each entry may be:
   - an object: `{ username: 'user', password: 'pass' }`
   - an array: `['user', 'pass']`
@@ -87,15 +87,15 @@ app.listen(3000, () => console.log('listening on :3000'));
 
 ### broadcaster
 
-Use `htws/broadcast` to POST data to `htws/server`.
+Use `httpsock/broadcast` to POST data to `httpsock/server`.
 
 Example:
 
 ```js
-const HTWSBroadcast = require('htws/broadcast');
+const HTTPSockBroadcast = require('httpsock/broadcast');
 
-const broadcaster = new HTWSBroadcast({
-    server: 'http://localhost:1234/htws',
+const broadcaster = new HTTPSockBroadcast({
+    server: 'http://localhost:1234/httpsock',
     cert: './certs/chain.pem', // optional, only needed if the server is running on HTTPS
     auth: 'user:pass',
     callback: (response => console.log('→', response)),
@@ -116,15 +116,15 @@ broadcaster.stop();
 
 ### client
 
-Use `htws/client` to connect to a `htws/server`'s GET endpoint and intercept a data stream.
+Use `httpsock/client` to connect to a `httpsock/server`'s GET endpoint and intercept a data stream.
 
 Example:
 
 ```js
-const HTWSClient = require('htws/client');
+const HTTPSockClient = require('httpsock/client');
 
-const client = new HTWSClient({
-    server: 'http://localhost:1234/htws',
+const client = new HTTPSockClient({
+    server: 'http://localhost:1234/httpsock',
     cert: './certs/chain.pem', // optional, only needed if the server is running on HTTPS
     auth: 'user:pass',
     callback: (response => console.log('→', response)),
@@ -148,4 +148,4 @@ When running the server locally, no certificate is required.
 
 ## License
 
-`htws` licensed under ISC. (c) 2026 Faisal Nageer.
+`httpsock` licensed under ISC. (c) 2026 Faisal Nageer.

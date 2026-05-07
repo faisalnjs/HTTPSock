@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const htwsServer = require('./server');
+const httpsockServer = require('./server');
 
 const app = express();
 const server = http.createServer(app);
@@ -9,21 +9,21 @@ const port = 1234;
 describe('Server', () => {
   test('express', () => {
     expect(() => {
-      app.get('/', (req, res) => res.send('htws server'));
+      app.get('/', (req, res) => res.send('httpsock server'));
     }).not.toThrow();
   });
 
-  app.get('/', (req, res) => res.send('htws server'));
+  app.get('/', (req, res) => res.send('httpsock server'));
 
   test('rooms', () => {
     expect(() => {
       const rooms = [1, 2, 3, 4];
 
       for (const room of rooms) {
-        app.use(`/room/${room}`, htwsServer({ maxBody: `${room * 5}mb` }));
+        app.use(`/room/${room}`, httpsockServer({ maxBody: `${room * 5}mb` }));
       };
 
-      app.use('/room/5', htwsServer({ maxBody: '5mb' }));
+      app.use('/room/5', httpsockServer({ maxBody: '5mb' }));
 
       function redirectToRoom(req, res, next) {
         const room = req.query.room;
@@ -38,10 +38,10 @@ describe('Server', () => {
   const rooms = [1, 2, 3, 4];
 
   for (const room of rooms) {
-    app.use(`/room/${room}`, htwsServer({ maxBody: `${room * 5}mb` }));
+    app.use(`/room/${room}`, httpsockServer({ maxBody: `${room * 5}mb` }));
   };
 
-  app.use('/room/5', htwsServer({ maxBody: '5mb' }));
+  app.use('/room/5', httpsockServer({ maxBody: '5mb' }));
 
   function redirectToRoom(req, res, next) {
     const room = req.query.room;
@@ -66,12 +66,12 @@ describe('Server', () => {
   });
 });
 
-const htwsBroadcast = require('htws/broadcast');
+const httpsockBroadcast = require('httpsock/broadcast');
 
 describe('Broadcast', () => {
   test('create', () => {
     expect(() => {
-      const broadcaster = new htwsBroadcast({
+      const broadcaster = new httpsockBroadcast({
         server: `http://localhost:${port}/room/1`,
         cert: './certs/chain.pem',
         callback: (response => console.log('←', response)),
@@ -87,7 +87,7 @@ describe('Broadcast', () => {
   beforeAll((done) => {
     server.listen(port);
 
-    const broadcaster = new htwsBroadcast({
+    const broadcaster = new httpsockBroadcast({
       server: `http://localhost:${port}/room/1`,
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),
@@ -130,14 +130,14 @@ describe('Broadcast', () => {
   });
 });
 
-const htwsClient = require('./client');
+const httpsockClient = require('./client');
 
 describe('Client', () => {
   var app = null;
 
   test('create', () => {
     expect(() => {
-      app = new htwsClient({
+      app = new httpsockClient({
         server: `http://localhost:${port}/room/1`,
         cert: './certs/chain.pem',
         callback: (response => console.log('←', response)),
@@ -154,8 +154,8 @@ describe('Client', () => {
   beforeAll((done) => {
     server.listen(port);
 
-    app = new htwsClient({
-      server: 'http://localhost:1234/htws/1',
+    app = new httpsockClient({
+      server: 'http://localhost:1234/httpsock/1',
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),
       close: (() => console.log('↓ stream closed')),
@@ -164,7 +164,7 @@ describe('Client', () => {
 
     app.stream();
 
-    const client = new htwsBroadcast({
+    const client = new httpsockBroadcast({
       server: `http://localhost:${port}/room/1`,
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),

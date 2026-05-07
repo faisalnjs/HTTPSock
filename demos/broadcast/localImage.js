@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const htwsBroadcast = require('../../broadcast');
+const httpsockBroadcast = require('../../broadcast');
 
 const imagePath = path.resolve(__dirname, '..', '..', 'setup.png');
 
@@ -12,8 +12,8 @@ if (!fs.existsSync(imagePath)) {
 const imageBuffer = fs.readFileSync(imagePath);
 console.log('image size:', imageBuffer.length, 'path:', imagePath);
 
-const broadcaster = new htwsBroadcast({
-    server: 'http://localhost:1234/htws/1',
+const broadcaster = new httpsockBroadcast({
+    server: 'http://localhost:1234/httpsock/1',
     cert: './certs/chain.pem',
     auth: { username: 'broadcaster1', password: 'broadcasterPassword1' },
     callback: (response => console.log('→', response)),

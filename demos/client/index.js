@@ -1,7 +1,7 @@
-const htwsClient = require('htws/client');
+const httpsockClient = require('httpsock/client');
 
-const client = new htwsClient({
-    server: 'https://ws.faisaln.com/htws/1',
+const client = new httpsockClient({
+    server: 'https://ws.faisaln.com/httpsock/1',
     cert: './certs/chain.pem',
     auth: { username: 'client1', password: 'password1' },
     callback: (response => console.log('→', response)),

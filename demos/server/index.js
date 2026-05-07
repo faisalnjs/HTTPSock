@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const htwsServer = require('htws/server');
+const httpsockServer = require('httpsock/server');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,11 +15,11 @@ const broadcasts = [
   { username: 'broadcaster2', password: 'broadcasterPassword2' }
 ];
 
-app.use('/htws/1', htwsServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
-app.use('/htws/2', htwsServer({ maxBody: '10mb', auth: true, clients, broadcasts }));
+app.use('/httpsock/1', httpsockServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
+app.use('/httpsock/2', httpsockServer({ maxBody: '10mb', auth: true, clients, broadcasts }));
 
-app.get('/', (req, res) => res.send('htws server'));
+app.get('/', (req, res) => res.send('httpsock server'));
 
 server.listen(port, () => {
-  console.log(`htws://${port}`);
+  console.log(`httpsock://${port}`);
 });

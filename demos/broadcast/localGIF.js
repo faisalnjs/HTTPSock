@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const htwsBroadcast = require('../../broadcast');
+const httpsockBroadcast = require('../../broadcast');
 const { GifReader } = require('omggif');
 const { PNG } = require('pngjs');
 
@@ -24,8 +24,8 @@ try {
 const frameCount = reader.numFrames();
 console.log('gif frames:', frameCount, 'size:', gifBuffer.length);
 
-const broadcaster = new htwsBroadcast({
-  server: 'http://localhost:1234/htws/1',
+const broadcaster = new httpsockBroadcast({
+  server: 'http://localhost:1234/httpsock/1',
   cert: './certs/chain.pem',
   auth: { username: 'broadcaster1', password: 'broadcasterPassword1' },
   callback: (response => console.log('→', response)),
