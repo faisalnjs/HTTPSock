@@ -7,7 +7,7 @@ const imagePath = path.resolve(__dirname, '..', '..', 'setup.png');
 if (!fs.existsSync(imagePath)) {
     console.error('setup.png not found at', imagePath);
     process.exit(1);
-}
+};
 
 const imageBuffer = fs.readFileSync(imagePath);
 console.log('image size:', imageBuffer.length, 'path:', imagePath);
