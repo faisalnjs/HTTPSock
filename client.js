@@ -5,7 +5,7 @@ const https = require('https');
 const fs = require('fs');
 const { URL } = require('url');
 
-class hwsClient {
+class htwsClient {
     constructor(options = {
         server: 'https://sub.domain.tld:port/path',
         cert: './certs/chain.pem',
@@ -55,7 +55,7 @@ class hwsClient {
                         const sizeLine = buffer.subarray(0, crlfIdx).toString().trim();
                         const size = parseInt(sizeLine, 16);
                         if (Number.isNaN(size)) {
-                            this.err(new Error('Invalid hws size: ' + sizeLine));
+                            this.err(new Error('Invalid htws size: ' + sizeLine));
                             return;
                         };
                         const frameTotal = crlfIdx + 2 + size + 2;
@@ -105,4 +105,4 @@ class hwsClient {
     };
 };
 
-module.exports = hwsClient;
+module.exports = htwsClient;

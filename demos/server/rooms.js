@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const hwsServer = require('hws/server');
+const htwsServer = require('htws/server');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,13 +18,13 @@ const broadcasts = [
 const rooms = [1, 2, 3, 4];
 
 for (const room of rooms) {
-  app.use(`/room/${room}`, hwsServer({ maxBody: `${room * 5}mb`, auth: true, clients, broadcasts }));
+  app.use(`/room/${room}`, htwsServer({ maxBody: `${room * 5}mb`, auth: true, clients, broadcasts }));
 };
 
-app.use('/room/5', hwsServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
+app.use('/room/5', htwsServer({ maxBody: '5mb', auth: true, clients, broadcasts }));
 
-app.get('/', (req, res) => res.send('hws server'));
+app.get('/', (req, res) => res.send('htws server'));
 
 server.listen(port, () => {
-  console.log(`hws://${port}`);
+  console.log(`htws://${port}`);
 });

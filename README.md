@@ -1,5 +1,5 @@
 
-# HTTP/S WebSockets (hws)
+# HTTP/S WebSockets (htws)
 
 WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, broadcasters, and clients, without the WebSocket protocol.
 
@@ -9,18 +9,18 @@ Lightweight wrapper, HTTP chunked responses, continuous streaming, authenticatio
 
 3 main implementations:
 
-- `hws/server` - bind `hws/server` to an Express app route to convert it into a streaming server endpoint. Accepts POST for sending and GET for streaming.
-- `hws/broadcast` - broadcast text, JSON, image, buffer data to a `hws/server`.
-- `hws/client` - connect to a `hws/server` stream endpoint and receive incoming data.
+- `htws/server` - bind `htws/server` to an Express app route to convert it into a streaming server endpoint. Accepts POST for sending and GET for streaming.
+- `htws/broadcast` - broadcast text, JSON, image, buffer data to a `htws/server`.
+- `htws/client` - connect to a `htws/server` stream endpoint and receive incoming data.
 
 ![Setup](./setup.png)
 
 ## Installation
 
-Install the `hws` from NPM:
+Install the `htws` from NPM:
 
 ```powershell
-npm install hws
+npm install htws
 ```
 
 Then, import the modules in your Node.js (Express.js for servers) project as needed.
@@ -29,7 +29,7 @@ Note that if the server is running on HTTPS, a certificate chain (whether self-s
 
 ## Local Demo
 
-There are ready-made demos in the [`demos`](demos) folder. To quickly test `hws`, open the following in 3 separate terminal windows:
+There are ready-made demos in the [`demos`](demos) folder. To quickly test `htws`, open the following in 3 separate terminal windows:
 
 - Start the demo server:
 
@@ -64,10 +64,10 @@ The server exposes a function that returns an Express `Router`. Example usage in
 
 ```js
 const express = require('express');
-const hwsRouter = require('hws/server');
+const htwsRouter = require('htws/server');
 
 const app = express();
-app.use('/hws', hwsRouter({
+app.use('/htws', htwsRouter({
     maxBody: '10mb',        // max POST size
     auth: true,             // require HTTP Basic auth for clients/broadcasters
     clients: ['user:pass'], // credentials format is interchangeable
@@ -77,8 +77,8 @@ app.use('/hws', hwsRouter({
 app.listen(3000, () => console.log('listening on :3000'));
 ```
 
-- GET /hws (used by clients) keeps the response open and sends framed messages as they arrive.
-- POST /hws (used by broadcasters) accepts a body (any content type). Bodies are queued and delivered to connected clients.
+- GET /htws (used by clients) keeps the response open and sends framed messages as they arrive.
+- POST /htws (used by broadcasters) accepts a body (any content type). Bodies are queued and delivered to connected clients.
 - If `auth` is enabled the server expects HTTP Basic auth. The `clients` and `broadcasts` arrays define allowed credentials. Each entry may be:
   - an object: `{ username: 'user', password: 'pass' }`
   - an array: `['user', 'pass']`
@@ -87,15 +87,15 @@ app.listen(3000, () => console.log('listening on :3000'));
 
 ### broadcaster
 
-Use `hws/broadcast` to POST data to `hws/server`.
+Use `htws/broadcast` to POST data to `htws/server`.
 
 Example:
 
 ```js
-const HwsBroadcast = require('hws/broadcast');
+const HTWSBroadcast = require('htws/broadcast');
 
-const broadcaster = new HwsBroadcast({
-    server: 'http://localhost:1234/hws',
+const broadcaster = new HTWSBroadcast({
+    server: 'http://localhost:1234/htws',
     cert: './certs/chain.pem', // optional, only needed if the server is running on HTTPS
     auth: 'user:pass',
     callback: (response => console.log('→', response)),
@@ -116,15 +116,15 @@ broadcaster.stop();
 
 ### client
 
-Use `hws/client` to connect to a `hws/server`'s GET endpoint and intercept a data stream.
+Use `htws/client` to connect to a `htws/server`'s GET endpoint and intercept a data stream.
 
 Example:
 
 ```js
-const HwsClient = require('hws/client');
+const HTWSClient = require('htws/client');
 
-const client = new HwsClient({
-    server: 'http://localhost:1234/hws',
+const client = new HTWSClient({
+    server: 'http://localhost:1234/htws',
     cert: './certs/chain.pem', // optional, only needed if the server is running on HTTPS
     auth: 'user:pass',
     callback: (response => console.log('→', response)),
@@ -148,4 +148,4 @@ When running the server locally, no certificate is required.
 
 ## License
 
-`hws` licensed under ISC. (c) 2026 Faisal Nageer.
+`htws` licensed under ISC. (c) 2026 Faisal Nageer.

@@ -1,6 +1,6 @@
 const express = require('express');
 const http = require('http');
-const hwsServer = require('./server');
+const htwsServer = require('./server');
 
 const app = express();
 const server = http.createServer(app);
@@ -9,21 +9,21 @@ const port = 1234;
 describe('Server', () => {
   test('express', () => {
     expect(() => {
-      app.get('/', (req, res) => res.send('hws server'));
+      app.get('/', (req, res) => res.send('htws server'));
     }).not.toThrow();
   });
 
-  app.get('/', (req, res) => res.send('hws server'));
+  app.get('/', (req, res) => res.send('htws server'));
 
   test('rooms', () => {
     expect(() => {
       const rooms = [1, 2, 3, 4];
 
       for (const room of rooms) {
-        app.use(`/room/${room}`, hwsServer({ maxBody: `${room * 5}mb` }));
+        app.use(`/room/${room}`, htwsServer({ maxBody: `${room * 5}mb` }));
       };
 
-      app.use('/room/5', hwsServer({ maxBody: '5mb' }));
+      app.use('/room/5', htwsServer({ maxBody: '5mb' }));
 
       function redirectToRoom(req, res, next) {
         const room = req.query.room;
@@ -38,10 +38,10 @@ describe('Server', () => {
   const rooms = [1, 2, 3, 4];
 
   for (const room of rooms) {
-    app.use(`/room/${room}`, hwsServer({ maxBody: `${room * 5}mb` }));
+    app.use(`/room/${room}`, htwsServer({ maxBody: `${room * 5}mb` }));
   };
 
-  app.use('/room/5', hwsServer({ maxBody: '5mb' }));
+  app.use('/room/5', htwsServer({ maxBody: '5mb' }));
 
   function redirectToRoom(req, res, next) {
     const room = req.query.room;
@@ -66,12 +66,12 @@ describe('Server', () => {
   });
 });
 
-const hwsBroadcast = require('hws/broadcast');
+const htwsBroadcast = require('htws/broadcast');
 
 describe('Broadcast', () => {
   test('create', () => {
     expect(() => {
-      const broadcaster = new hwsBroadcast({
+      const broadcaster = new htwsBroadcast({
         server: `http://localhost:${port}/room/1`,
         cert: './certs/chain.pem',
         callback: (response => console.log('←', response)),
@@ -87,7 +87,7 @@ describe('Broadcast', () => {
   beforeAll((done) => {
     server.listen(port);
 
-    const broadcaster = new hwsBroadcast({
+    const broadcaster = new htwsBroadcast({
       server: `http://localhost:${port}/room/1`,
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),
@@ -130,14 +130,14 @@ describe('Broadcast', () => {
   });
 });
 
-const hwsClient = require('./client');
+const htwsClient = require('./client');
 
 describe('Client', () => {
   var app = null;
 
   test('create', () => {
     expect(() => {
-      app = new hwsClient({
+      app = new htwsClient({
         server: `http://localhost:${port}/room/1`,
         cert: './certs/chain.pem',
         callback: (response => console.log('←', response)),
@@ -154,8 +154,8 @@ describe('Client', () => {
   beforeAll((done) => {
     server.listen(port);
 
-    app = new hwsClient({
-      server: 'http://localhost:1234/hws/1',
+    app = new htwsClient({
+      server: 'http://localhost:1234/htws/1',
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),
       close: (() => console.log('↓ stream closed')),
@@ -164,7 +164,7 @@ describe('Client', () => {
 
     app.stream();
 
-    const client = new hwsBroadcast({
+    const client = new htwsBroadcast({
       server: `http://localhost:${port}/room/1`,
       cert: './certs/chain.pem',
       callback: (response => console.log('←', response)),

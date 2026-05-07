@@ -3,7 +3,7 @@
 const { Router } = require('express');
 const { Transform } = require('stream');
 
-class HwsStream extends Transform {
+class HTWSStream extends Transform {
   _transform(chunk, _enc, callback) {
     const size = chunk.length.toString(16);
     this.push(size + '\r\n');
@@ -14,7 +14,7 @@ class HwsStream extends Transform {
 };
 
 /**
- * Returns the HWS server router.
+ * Returns the htws server router.
  *
  * @param {Object} [options]
  * @param {number} [options.maxBody='10mb'] - Maximum allowed body size for POST requests.
@@ -23,7 +23,7 @@ class HwsStream extends Transform {
  * @param {Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
  * @returns {Router}
  */
-function hwsRouter(options = {}) {
+function htwsRouter(options = {}) {
   const router = Router();
   const requireAuth = Boolean(options.auth);
   const allowedClients = options.clients || [];
@@ -71,7 +71,7 @@ function hwsRouter(options = {}) {
     if (requireAuth) {
       const credentials = parseBasic(req.headers.authorization);
       if (matches(credentials, allowedClients) === false) {
-        res.set('WWW-Authenticate', 'Basic realm="hws"');
+        res.set('WWW-Authenticate', 'Basic realm="htws"');
         return res.status(401).type('text').send('Unauthorized');
       };
     };
@@ -80,14 +80,14 @@ function hwsRouter(options = {}) {
       'Transfer-Encoding': 'chunked',
       Connection: 'keep-alive',
     });
-    const stream = new HwsStream();
+    const stream = new HTWSStream();
     stream.pipe(res);
 
     var closed = false;
 
     stream.on('error', (err) => {
       if (err && err.code === 'ERR_STREAM_WRITE_AFTER_END') return;
-      console.error('HwsStream error:', err && err.stack ? err.stack : err);
+      console.error('HTWSStream error:', err && err.stack ? err.stack : err);
       try {
         stream.destroy();
       } catch (e) { };
@@ -129,7 +129,7 @@ function hwsRouter(options = {}) {
       const credentials = parseBasic(req.headers.authorization);
       authenticatedAs = matches(credentials, allowedBroadcasts);
       if (authenticatedAs === false) {
-        res.set('WWW-Authenticate', 'Basic realm="hws"');
+        res.set('WWW-Authenticate', 'Basic realm="htws"');
         return res.status(401).type('text').send('Unauthorized');
       };
     };
@@ -155,4 +155,4 @@ function hwsRouter(options = {}) {
   return router;
 };
 
-module.exports = hwsRouter;
+module.exports = htwsRouter;

@@ -1,7 +1,7 @@
-const hwsBroadcast = require('../../broadcast');
+const htwsBroadcast = require('../../broadcast');
 
-const broadcaster1 = new hwsBroadcast({
-  server: 'https://ws.faisaln.com/hws/1',
+const broadcaster1 = new htwsBroadcast({
+  server: 'https://ws.faisaln.com/htws/1',
   cert: './certs/chain.pem',
   auth: { username: 'broadcaster1', password: 'broadcasterPassword1' },
   callback: (response => console.log('→', response)),
@@ -20,8 +20,8 @@ setInterval(() => {
 }, 3000);
 
 
-const broadcaster2 = new hwsBroadcast({
-  server: 'https://ws.faisaln.com/hws/2',
+const broadcaster2 = new htwsBroadcast({
+  server: 'https://ws.faisaln.com/htws/2',
   cert: './certs/chain.pem',
   auth: { username: 'broadcaster2', password: 'broadcasterPassword2' },
   callback: (response => console.log('→', response)),

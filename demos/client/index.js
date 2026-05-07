@@ -1,7 +1,7 @@
-const hwsClient = require('hws/client');
+const htwsClient = require('htws/client');
 
-const client = new hwsClient({
-    server: 'https://ws.faisaln.com/hws/1',
+const client = new htwsClient({
+    server: 'https://ws.faisaln.com/htws/1',
     cert: './certs/chain.pem',
     auth: { username: 'client1', password: 'password1' },
     callback: (response => console.log('→', response)),

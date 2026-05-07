@@ -1,5 +1,5 @@
 {
-	"name": "hws",
+	"name": "htws",
 	"version": "1.0.0",
 	"description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, broadcasters, and clients, without the WebSocket protocol.",
 	"main": "index.js",
@@ -33,19 +33,19 @@
 		"broadcast",
 		"ws",
 		"data-streaming",
-		"hws",
+		"htws",
 		"rooms"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/faisalnjs/hws.git"
+		"url": "git+https://github.com/faisalnjs/htws.git"
 	},
 	"author": "Faisal N",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/faisalnjs/hws/issues"
+		"url": "https://github.com/faisalnjs/htws/issues"
 	},
-	"homepage": "https://faisaln.com/packages/hws",
+	"homepage": "https://faisaln.com/packages/htws",
 	"dependencies": {
 		"express": "^5.2.1"
 	},
