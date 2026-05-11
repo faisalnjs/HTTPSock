@@ -34,6 +34,7 @@ There are ready-made demos in the [`demos`](demos) folder. To quickly test `http
 
 ```powershell
 node demos/server/index.js
+node demos/server/imageStream.js
 ```
 
 - Start a client to observe the stream (choose one):
@@ -144,6 +145,10 @@ client.stop();
 A signed certificate chain is only required for servers running on HTTPS. The server, broadcasters, and clients must be provided the same certificate chain (whether self-signed or not) for secure connections. By default, the certificate will be loaded from the `cert` option path, defaulting to `./certs/chain.pem` if not provided.
 
 When running the server locally, no certificate is required.
+
+## Proof of Concept
+
+This package was successfully used to relay live streamed video camera feed from a connected Raspberry Pi (broadcaster) to an external machine (server) and then to a hosted website on the frontend (client). Related demo files can be found as `server/imageStream.js`, `broadcast/localImageStream.js`, and `client/localImageStream.js`.
 
 ## License
 
