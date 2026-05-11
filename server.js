@@ -46,15 +46,21 @@ function HTTPSockServer(options = {}) {
 
   const matches = (credentials, list) => {
     if (!credentials) return false;
-    for (const item of list) {
-      if (!item) continue;
-      if (item.username && item.password) {
-        if ((item.username === credentials.username) && (item.password === credentials.password)) return credentials.username;
-      } else if (Array.isArray(item) && (item.length >= 2)) {
-        if ((item[0] === credentials.username) && (item[1] === credentials.password)) return credentials.username;
-      } else if (typeof item === 'string') {
-        const itemCredentials = item.split(':');
-        if ((itemCredentials[0] === credentials.username) && (itemCredentials[1] === credentials.password)) return credentials.username;
+    if (typeof list === 'function') {
+      try {
+        return list(credentials.username, credentials.password);
+      } catch { };
+    } else {
+      for (const item of list) {
+        if (!item) continue;
+        if (item.username && item.password) {
+          if ((item.username === credentials.username) && (item.password === credentials.password)) return credentials.username;
+        } else if (Array.isArray(item) && (item.length >= 2)) {
+          if ((item[0] === credentials.username) && (item[1] === credentials.password)) return credentials.username;
+        } else if (typeof item === 'string') {
+          const itemCredentials = item.split(':');
+          if ((itemCredentials[0] === credentials.username) && (itemCredentials[1] === credentials.password)) return credentials.username;
+        };
       };
     };
     return false;

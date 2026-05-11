@@ -68,10 +68,13 @@ const HTTPSockServer = require('httpsock/server');
 
 const app = express();
 app.use('/httpsock', HTTPSockServer({
-    maxBody: '10mb',        // max POST size
-    auth: true,             // require HTTP Basic auth for clients/broadcasters
-    clients: ['user:pass'], // credentials format is interchangeable
-    broadcasts: [{ username: 'user', password: 'pass' }]
+    maxBody: '10mb', // max POST size
+    auth: true, // require HTTP Basic auth for clients/broadcasters
+    clients: [{ username: 'user', password: 'pass' }], // credentials array format is interchangeable
+    broadcasts: (username, password) => { // or use function format
+        if ((username === 'user') && (password === 'pass')) return true;
+        return false;
+    }
 }));
 
 app.listen(3000, () => console.log('listening on :3000'));
@@ -79,10 +82,12 @@ app.listen(3000, () => console.log('listening on :3000'));
 
 - GET /httpsock (used by clients) keeps the response open and sends framed messages as they arrive.
 - POST /httpsock (used by broadcasters) accepts a body (any content type). Bodies are queued and delivered to connected clients.
-- If `auth` is enabled the server expects HTTP Basic auth. The `clients` and `broadcasts` arrays define allowed credentials. Each entry may be:
-  - an object: `{ username: 'user', password: 'pass' }`
-  - an array: `['user', 'pass']`
-  - a string: `'user:pass'`
+- If `auth` is enabled the server expects HTTP Basic auth.
+  - The `clients` and `broadcasts` arrays define allowed credentials. Each entry may be:
+    - an object: `{ username: 'user', password: 'pass' }`
+    - an array: `['user', 'pass']`
+    - a string: `'user:pass'`
+  - Alternatively, `clients` and `broadcasts` can be set to functions: `(username, password) => true|false`
 - The server sets `Transfer-Encoding: chunked` and uses an internal queue to handle bursts and backpressure.
 
 ### broadcaster
