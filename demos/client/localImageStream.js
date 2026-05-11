@@ -5,7 +5,7 @@ const HTTPSockClient = require('../../client');
 const outPath = path.resolve(__dirname, '..', '..', 'stream.jpeg');
 
 const client = new HTTPSockClient({
-  server: 'http://localhost:1234/httpsock/1',
+  server: 'http://localhost:1234/httpsock',
   cert: './certs/chain.pem',
   auth: { username: 'client1', password: 'password1' },
   callback: (response => {
