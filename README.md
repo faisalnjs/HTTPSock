@@ -147,4 +147,4 @@ When running the server locally, no certificate is required.
 
 ## License
 
-`httpsock` licensed under ISC. (c) 2026 Faisal Nageer.
+HTTPSock/`httpsock` is licensed under ISC. (c) 2026 Faisal Nageer. This concept has likely been implemented before, but this package was created so that I could learn how to implement it myself and so that it fit the specific use cases for my projects.
