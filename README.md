@@ -30,28 +30,37 @@ Note that if the server is running on HTTPS, a certificate chain (whether self-s
 
 There are ready-made demos in the [`demos`](demos) folder. To quickly test `httpsock`, open the following in 3 separate terminal windows:
 
-- Start the demo server:
+- Start a demo server (choose one):
 
 ```powershell
-node demos/server/index.js
-node demos/server/imageStream.js
+node demos/server/index.js # generic server
+
+node demos/server/rooms.js # server with rooms
+node demos/server/roomRedirects.js # server with rooms and simple redirects
+node demos/server/customAuth.js # server with custom authentication functions
 ```
 
 - Start a client to observe the stream (choose one):
 
 ```powershell
-node demos/client/local.js
-node demos/client/localGIF.js
-node demos/client/localImage.js
+node demos/client/local.js # generic local client
+
+node demos/client/localImage.js # image client
+node demos/client/localGIF.js # GIF reconstruction client
+
+node demos/client/index.js # production client
 ```
 
 - Start a broadcaster (choose matching):
 
 ```powershell
-node demos/broadcast/local.js
-node demos/broadcast/localGIF.js
-node demos/broadcast/localImage.js
-node demos/broadcast/localJSON.js
+node demos/broadcast/local.js # generic local broadcaster
+
+node demos/broadcast/localJSON.js # JSON broadcaster
+node demos/broadcast/localGIF.js # GIF broadcaster
+node demos/broadcast/localImage.js # image broadcaster
+
+node demos/broadcast/index.js # production broadcaster
 ```
 
 The demos demonstrate how to run a server, broadcast binary (images/GIF) and JSON/text messages, and connect clients that parse messages automatically. You'll likely need to fine-tune these scripts so that they fit your use case and data formats.
