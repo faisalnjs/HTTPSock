@@ -6,6 +6,10 @@ const app = express();
 const server = http.createServer(app);
 const port = 1234;
 
+function callback(authenticatedAs, response) {
+  console.log(`→ ${authenticatedAs}:`, response);
+};
+
 describe('Server', () => {
   test('express', () => {
     expect(() => {
@@ -20,10 +24,10 @@ describe('Server', () => {
       const rooms = [1, 2, 3, 4];
 
       for (const room of rooms) {
-        app.use(`/room/${room}`, HTTPSockServer({ maxBody: `${room * 5}mb` }));
+        app.use(`/room/${room}`, HTTPSockServer({ maxBody: `${room * 5}mb`, callback }));
       };
 
-      app.use('/room/5', HTTPSockServer({ maxBody: '5mb' }));
+      app.use('/room/5', HTTPSockServer({ maxBody: '5mb', callback }));
 
       function redirectToRoom(req, res, next) {
         const room = req.query.room;
@@ -38,7 +42,7 @@ describe('Server', () => {
   const rooms = [1, 2, 3, 4];
 
   for (const room of rooms) {
-    app.use(`/room/${room}`, HTTPSockServer({ maxBody: `${room * 5}mb` }));
+    app.use(`/room/${room}`, HTTPSockServer({ maxBody: `${room * 5}mb`, callback }));
   };
 
   app.use('/room/5', HTTPSockServer({ maxBody: '5mb' }));

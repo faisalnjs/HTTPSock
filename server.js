@@ -21,6 +21,7 @@ class HTTPSockStream extends Transform {
  * @param {boolean} [options.auth=false] - Whether to require authentication for clients and broadcasters.
  * @param {Array} [options.clients=[]] - List of allowed client credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
  * @param {Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
+ * @param {function} [options.callback=((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message))] - Callback function with successful data sent to the server. Receives two parameters: authenticatedAs, message.
  * @returns {Router}
  */
 function HTTPSockServer(options = {}) {
@@ -28,6 +29,7 @@ function HTTPSockServer(options = {}) {
   const requireAuth = Boolean(options.auth);
   const allowedClients = options.clients || [];
   const allowedBroadcasts = options.broadcasts || [];
+  const callback = options.callback || ((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message));
 
   const parseBasic = (header) => {
     if (!header || (typeof header !== 'string')) return null;
@@ -144,15 +146,15 @@ function HTTPSockServer(options = {}) {
     if (Buffer.isBuffer(body)) {
       if (contentType && (contentType.indexOf('application/json') !== -1)) {
         const string = body.toString();
-        console.log(`→ ${authenticatedAs}:`, string);
+        callback(authenticatedAs, string);
         messageQueue.push(body);
       } else {
-        console.log(`←→ ${authenticatedAs}: %s (%d bytes)`, contentType, body.length);
+        callback(authenticatedAs, `${contentType} (${body.length} bytes)`);
         messageQueue.push(body);
       };
     } else {
       const string = (body === undefined || body === null) ? '' : String(body);
-      console.log(`→ ${authenticatedAs}:`, string);
+      callback(authenticatedAs, string);
       messageQueue.push(Buffer.from(string));
     };
     res.type('text').send('OK');
