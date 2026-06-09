@@ -33,11 +33,11 @@ class HTTPSockBroadcast {
     this.request = null;
   };
 
-  err(error) {
+  async err(error) {
     if (error === 'ended') {
-      this.close();
+      await this.close();
     } else {
-      this.error(error);
+      await this.error(error);
     };
   };
 
@@ -72,7 +72,7 @@ class HTTPSockBroadcast {
       res => {
         var response = '';
         res.on('data', r => (response += r));
-        res.on('end', () => this.callback(response));
+        res.on('end', async () => await this.callback(response));
       }
     );
     this.request.on('error', this.err);

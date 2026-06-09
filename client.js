@@ -23,11 +23,11 @@ class HTTPSockClient {
         this.request = null;
     };
 
-    err(error) {
+    async err(error) {
         if (error === 'ended' || (error && (error.code === 'ECONNRESET'))) {
-            this.close();
+            await this.close();
         } else {
-            this.error(error);
+            await this.error(error);
         };
     };
 
@@ -47,7 +47,7 @@ class HTTPSockClient {
             },
             res => {
                 var buffer = Buffer.alloc(0);
-                const feed = (chunk) => {
+                const feed = async (chunk) => {
                     buffer = Buffer.concat([buffer, Buffer.from(chunk)]);
                     while (true) {
                         const crlfIdx = buffer.indexOf('\r\n');
@@ -86,14 +86,14 @@ class HTTPSockClient {
                             out = payload;
                         };
                         try {
-                            this.callback(out);
+                            await this.callback(out);
                         } catch (err) {
                             this.err(err);
                         };
                     };
                 };
                 res.on('data', feed);
-                res.on('end', () => this.close());
+                res.on('end', async () => await this.close());
             }
         );
         this.request.on('error', this.err);

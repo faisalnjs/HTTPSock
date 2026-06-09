@@ -129,11 +129,11 @@ function HTTPSockServer(options = {}) {
     drain();
   });
 
-  router.post('/', (req, res) => {
+  router.post('/', async (req, res) => {
     var authenticatedAs = 'broadcaster';
     if (requireAuth) {
       const credentials = parseBasic(req.headers.authorization);
-      authenticatedAs = matches(credentials, allowedBroadcasts);
+      authenticatedAs = await matches(credentials, allowedBroadcasts);
       if (authenticatedAs === false) {
         res.set('WWW-Authenticate', 'Basic realm="httpsock"');
         return res.status(401).type('text').send('Unauthorized');
