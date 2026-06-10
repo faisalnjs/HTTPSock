@@ -19,8 +19,8 @@ class HTTPSockStream extends Transform {
  * @param {Object} [options]
  * @param {number} [options.maxBody='10mb'] - Maximum allowed body size for POST requests.
  * @param {boolean} [options.auth=false] - Whether to require authentication for clients and broadcasters.
- * @param {Array} [options.clients=[]] - List of allowed client credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
- * @param {Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'.
+ * @param {Array} [options.clients=[]] - List of allowed client credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
+ * @param {Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
  * @param {function} [options.callback=((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message))] - Callback function with successful data sent to the server. Receives two parameters: authenticatedAs, message.
  * @returns {Router}
  */
