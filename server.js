@@ -46,11 +46,11 @@ function HTTPSockServer(options = {}) {
     };
   };
 
-  const matches = (credentials, list) => {
+  const matches = async (credentials, list) => {
     if (!credentials) return false;
     if (typeof list === 'function') {
       try {
-        return list(credentials.username, credentials.password);
+        return await list(credentials.username, credentials.password);
       } catch { };
     } else {
       for (const item of list) {
@@ -75,10 +75,10 @@ function HTTPSockServer(options = {}) {
 
   const messageQueue = [];
 
-  router.get('/', (req, res) => {
+  router.get('/', async (req, res) => {
     if (requireAuth) {
       const credentials = parseBasic(req.headers.authorization);
-      if (matches(credentials, allowedClients) === false) {
+      if (await matches(credentials, allowedClients) === false) {
         res.set('WWW-Authenticate', 'Basic realm="httpsock"');
         return res.status(401).type('text').send('Unauthorized');
       };
