@@ -7,6 +7,23 @@ const { URL } = require('url');
 
 const isNode = (typeof process !== 'undefined') && process.versions?.node && (typeof Buffer !== 'undefined');
 
+/**
+ * HTTPSockClient
+ *
+ * Client that connects to an `httpsock` server GET endpoint and receives a framed stream of messages.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.server='https://sub.domain.tld:port/path'] - URL of the httpsock server GET endpoint.
+ * @param {string|Buffer} [options.cert='./certs/chain.pem'] - Optional certificate chain for HTTPS servers.
+ * @param {function} [options.callback=(response) => console.log('←', response)] - Callback for each received message (may receive Buffer, string, or parsed JSON).
+ * @param {function} [options.close=() => console.log('↓ stream closed')] - Called when the stream ends.
+ * @param {function} [options.error=(err) => console.error('↓', err)] - Called on errors.
+ * @param {string|Object} [options.auth] - Optional basic auth string 'user:pass' or { username, password } used for Authorization header.
+ *
+ * Methods:
+ * - stream(): open the streaming connection
+ * - stop(): stop the streaming connection
+ */
 class HTTPSockClient {
     constructor(options = {
         server: 'https://sub.domain.tld:port/path',
@@ -33,9 +50,11 @@ class HTTPSockClient {
         this.error = options.error || (error => console.error('↓', error));
         this.err = this.err.bind(this);
         this.request = null;
+        this.connected = false;
     };
 
     async err(error) {
+        this.connected = false;
         if (error === 'ended' || (error && (error.code === 'ECONNRESET'))) {
             await this.close();
         } else {
@@ -105,7 +124,10 @@ class HTTPSockClient {
                     };
                 };
                 res.on('data', feed);
-                res.on('end', async () => await this.close());
+                res.on('end', async () => {
+                    this.connected = false;
+                    await this.close();
+                });
             }
         );
         this.request.on('error', this.err);
@@ -114,6 +136,7 @@ class HTTPSockClient {
 
     stop() {
         if (this.request) this.request.destroy('ended');
+        this.connected = false;
     };
 };
 

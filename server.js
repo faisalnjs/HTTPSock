@@ -73,7 +73,46 @@ function HTTPSockServer(options = {}) {
     limit: options.maxBody || '10mb',
   }));
 
-  const messageQueue = [];
+  const connections = [];
+
+  const enqueueForConnection = (connection, buffer) => {
+    if (!connection || connection.closed || connection.stream.destroyed || connection.stream.writableEnded) return;
+    connection.queue.push(buffer);
+    drainConnection(connection);
+  };
+
+  const drainConnection = (conn) => {
+    if (!conn || conn.closed || conn.stream.destroyed || conn.stream.writableEnded) return;
+    while (conn.queue.length) {
+      const message = conn.queue[0];
+      try {
+        const ok = conn.stream.write(Buffer.from(message));
+        if (!ok) {
+          conn.stream.once('drain', () => { if (!conn.closed) drainConnection(conn); });
+          return;
+        };
+      } catch (err) {
+        if (err && err.code === 'ERR_STREAM_WRITE_AFTER_END') return;
+        console.error('Error writing to stream:', (err && err.stack) ? err.stack : err);
+        return;
+      };
+      conn.queue.shift();
+      if (conn.closed || conn.stream.destroyed || conn.stream.writableEnded) return;
+    };
+  };
+
+  router.sendTo = (room, username, buffer) => {
+    for (const connection of connections) {
+      if (connection.closed) continue;
+      if (room && (connection.room !== room)) continue;
+      if (username && (connection.username !== username)) continue;
+      enqueueForConnection(connection, buffer);
+    };
+  };
+
+  router.sendToRoom = (room, buffer) => router.sendTo(room, undefined, buffer);
+  router.sendToUser = (username, buffer) => router.sendTo(undefined, username, buffer);
+  router.sendAll = (buffer) => router.sendTo(undefined, undefined, buffer);
 
   router.get('/', async (req, res) => {
     if (requireAuth) {
@@ -92,10 +131,17 @@ function HTTPSockServer(options = {}) {
     stream.pipe(res);
 
     var closed = false;
+    const connection = {
+      stream,
+      closed: false,
+      queue: [],
+      username: undefined,
+      room: undefined,
+    };
 
     stream.on('error', (err) => {
-      if (err && err.code === 'ERR_STREAM_WRITE_AFTER_END') return;
-      console.error('HTTPSockStream error:', err && err.stack ? err.stack : err);
+      if (err && (err.code === 'ERR_STREAM_WRITE_AFTER_END')) return;
+      console.error('HTTPSockStream error:', (err && err.stack) ? err.stack : err);
       try {
         stream.destroy();
       } catch (e) { };
@@ -103,32 +149,45 @@ function HTTPSockServer(options = {}) {
 
     req.on('close', () => {
       closed = true;
+      connection.closed = true;
       try {
         if (!stream.writableEnded && !stream.destroyed) stream.end();
       } catch (e) { };
+      const idx = connections.indexOf(connection);
+      if (idx !== -1) connections.splice(idx, 1);
     });
 
-    const drain = () => {
-      if (closed || stream.destroyed || stream.writableEnded) return;
-      while (messageQueue.length) {
-        const msg = messageQueue.shift();
-        try {
-          const ok = stream.write(Buffer.from(msg));
-          if (!ok) {
-            stream.once('drain', () => { if (!closed) drain(); });
-            return;
-          };
-        } catch (err) {
-          if (err && err.code === 'ERR_STREAM_WRITE_AFTER_END') return;
-          console.error('Error writing to stream:', err && err.stack ? err.stack : err);
-          return;
-        };
-        if (closed || stream.destroyed || stream.writableEnded) return;
-      };
-      if (!closed) setImmediate(drain);
+    try {
+      const credentials = parseBasic(req.headers.authorization);
+      const matched = requireAuth ? await matches(credentials, allowedClients) : (credentials ? (credentials.username || undefined) : undefined);
+      connection.username = matched || req.headers['x-httpsock-username'] || (req.query && req.query.username) || 'client';
+    } catch (e) {
+      connection.username = req.headers['x-httpsock-username'] || (req.query && req.query.username) || 'client';
     };
+    connection.room = req.headers['x-httpsock-room'] || (req.query && req.query.room) || 'default';
 
-    drain();
+    connections.push(connection);
+
+    if (options.welcome) {
+      try {
+        const welcomeMsg = (typeof options.welcome === 'function') ? await options.welcome(connection.username) : options.welcome;
+        if (welcomeMsg !== undefined) {
+          var buffer;
+          if (Buffer.isBuffer(welcomeMsg)) {
+            buffer = welcomeMsg;
+          } else if ((typeof welcomeMsg === 'object') && (welcomeMsg !== null)) {
+            try {
+              buffer = Buffer.from(JSON.stringify(welcomeMsg));
+            } catch (e) {
+              buffer = Buffer.from(String(welcomeMsg));
+            };
+          } else {
+            buffer = Buffer.from(String(welcomeMsg));
+          };
+          enqueueForConnection(connection, buffer);
+        };
+      } catch (e) { };
+    };
   });
 
   router.post('/', async (req, res) => {
@@ -143,19 +202,46 @@ function HTTPSockServer(options = {}) {
     };
     const body = req.body;
     const contentType = req.headers['content-type'] || '';
+    const targetRoom = req.headers['x-httpsock-room'];
+    const targetUser = req.headers['x-httpsock-username'];
     if (Buffer.isBuffer(body)) {
       if (contentType && (contentType.indexOf('application/json') !== -1)) {
         const string = body.toString();
         callback(authenticatedAs, string);
-        messageQueue.push(body);
+        if (targetRoom || targetUser) {
+          if (targetUser) {
+            router.sendToUser(targetUser, body);
+          } else {
+            router.sendToRoom(targetRoom, body);
+          };
+        } else {
+          for (const connection of connections) enqueueForConnection(connection, body);
+        };
       } else {
         callback(authenticatedAs, `${contentType} (${body.length} bytes)`);
-        messageQueue.push(body);
+        if (targetRoom || targetUser) {
+          if (targetUser) {
+            router.sendToUser(targetUser, body);
+          } else {
+            router.sendToRoom(targetRoom, body);
+          };
+        } else {
+          for (const connection of connections) enqueueForConnection(connection, body);
+        };
       };
     } else {
       const string = (body === undefined || body === null) ? '' : String(body);
       callback(authenticatedAs, string);
-      messageQueue.push(Buffer.from(string));
+      const buf = Buffer.from(string);
+      if (targetRoom || targetUser) {
+        if (targetUser) {
+          router.sendToUser(targetUser, buf);
+        } else {
+          router.sendToRoom(targetRoom, buf);
+        };
+      } else {
+        for (const c of connections) enqueueForConnection(c, buf);
+      };
     };
     res.type('text').send('OK');
   });

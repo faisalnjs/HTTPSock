@@ -7,6 +7,23 @@ const { URL } = require('url');
 
 const isNode = (typeof process !== 'undefined') && process.versions?.node && (typeof Buffer !== 'undefined');
 
+/**
+ * HTTPSockBroadcast
+ *
+ * Broadcaster that POSTs data to an `httpsock` server POST endpoint.
+ *
+ * @param {Object} [options]
+ * @param {string} [options.server='https://sub.domain.tld:port/path'] - URL of the httpsock server POST endpoint.
+ * @param {string|Buffer} [options.cert='./certs/chain.pem'] - Optional certificate chain for HTTPS servers.
+ * @param {function} [options.callback=(response) => console.log('←', response)] - Called with the server response text after a POST completes.
+ * @param {function} [options.close=() => console.log('↓ stream closed')] - Called when request is ended normally.
+ * @param {function} [options.error=(err) => console.error('↓', err)] - Called on request errors.
+ * @param {string|Object} [options.auth] - Optional basic auth credentials.
+ *
+ * Methods:
+ * - send(data): sends data (Buffer, object -> JSON, string)
+ * - stop(): aborts the ongoing request
+ */
 class HTTPSockBroadcast {
   constructor(options = {
     server: 'https://sub.domain.tld:port/path',

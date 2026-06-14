@@ -85,7 +85,8 @@ app.use('/httpsock', HTTPSockServer({
         if ((username === 'user') && (password === 'pass')) return true;
         return false;
     },
-    callback: ((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message))
+    callback: ((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message)),
+    welcome: username => `Welcome, ${username}!` // optional welcome message for clients
 }));
 
 app.listen(3000, () => console.log('listening on :3000'));
@@ -101,6 +102,18 @@ app.listen(3000, () => console.log('listening on :3000'));
   - Alternatively, `clients` and `broadcasts` can be set to functions: `(username, password) => true|false`
 - The server sets `Transfer-Encoding: chunked` and uses an internal queue to handle bursts and backpressure.
 - The `callback` function is called with each incoming POST body, after authentication. authenticatedAs and response are passed in, representing the authenticated broadcaster and their message respectively.
+- The `welcome` function or string/Buffer is sent to each client immediately after they connect.
+
+#### Targeted Delivery (server)
+
+The router returned by `HTTPSockServer()` exposes the following:
+
+```js
+router.sendAll(Buffer.from('broadcast')); // send to all clients
+router.sendToRoom('room1', Buffer.from('room message')); // send to a room
+router.sendToUser('username', Buffer.from('private message')); // send to a username
+router.sendTo('room1', 'username', Buffer.from('to username in room1')); // send to a username in a room
+```
 
 ### broadcaster
 
@@ -131,6 +144,20 @@ broadcaster.stop();
 - If the server requires authentication, it must be provided in the `auth` option.
 - If the server is running on HTTPS, the broadcaster must also be provided the same certificate chain for secure connections.
 - The `send` method automatically sets a Content-Type header based on the payload (application/json for objects, text/plain for strings, application/octet-stream for Buffer).
+
+#### Targeted Delivery (broadcaster)
+
+Broadcasters can target messages to a room or a specific username by setting HTTP headers or query parameters on the POST request:
+
+- Headers `x-httpsock-username` and `x-httpsock-room` or `?username=` / `?room=` query parameters.
+
+```js
+fetch('https://example.com/httpsock', {
+  method: 'POST',
+  headers: { 'x-httpsock-room': 'room1', 'Content-Type': 'application/json' },
+  body: JSON.stringify({ type: 'room-message', text: 'hello room1' })
+});
+```
 
 ### client
 

@@ -4,6 +4,18 @@ if (isNode) {
     const mod = await import('./client.js');
     HTTPSockClient = mod && (mod.default || mod);
 } else {
+    /**
+     * HTTPSockClient (browser)
+     *
+     * Browser-compatible client that connects to an httpsock server using fetch + ReadableStream.
+     *
+     * @param {Object} [options]
+     * @param {string} [options.server='https://sub.domain.tld:port/path'] - URL of the httpsock server GET endpoint.
+     * @param {function} [options.callback=(response) => console.log('←', response)] - Called for each incoming message.
+     * @param {function} [options.close=() => console.log('↓ stream closed')] - Called when the stream closes.
+     * @param {function} [options.error=(err) => console.error('↓', err)] - Called on errors.
+     * @param {string|Object} [options.auth] - Optional basic auth credentials.
+     */
     HTTPSockClient = class HTTPSockClientBrowser {
         constructor(options = {
             server: 'https://sub.domain.tld:port/path',
@@ -18,7 +30,7 @@ if (isNode) {
             this.error = options.error || (error => console.error('↓', error));
             this.controller = null;
             this.reader = null;
-            this.running = false;
+            this.connected = false;
         };
 
         _makeAuthHeader() {
@@ -38,8 +50,8 @@ if (isNode) {
 
         async stream() {
             console.log('↑ connecting...');
-            if (this.running) return;
-            this.running = true;
+            if (this.connected) return;
+            this.connected = true;
             const headers = {};
             const authHeader = this._makeAuthHeader();
             if (authHeader) headers['Authorization'] = authHeader;
@@ -67,7 +79,7 @@ if (isNode) {
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) {
-                        this.running = false;
+                        this.connected = false;
                         try {
                             await this.close();
                         } catch (e) { };
@@ -137,7 +149,7 @@ if (isNode) {
             try {
                 if (this.controller) this.controller.abort();
             } catch (e) { };
-            this.running = false;
+            this.connected = false;
         };
     };
 };

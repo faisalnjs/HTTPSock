@@ -4,6 +4,18 @@ if (isNode) {
     const mod = await import('./broadcast.js');
     HTTPSockBroadcast = mod && (mod.default || mod);
 } else {
+    /**
+     * HTTPSockBroadcast (browser)
+     *
+     * Browser-compatible broadcaster that POSTs data via fetch.
+     *
+     * @param {Object} [options]
+     * @param {string} [options.server='https://sub.domain.tld:port/path'] - URL of the httpsock server POST endpoint.
+     * @param {function} [options.callback=(response) => console.log('←', response)] - Called with response text after POST completes.
+     * @param {function} [options.close=() => console.log('↓ stream closed')] - Called when aborted/closed.
+     * @param {function} [options.error=(err) => console.error('↓', err)] - Called on errors.
+     * @param {string|Object} [options.auth] - Optional basic auth credentials.
+     */
     HTTPSockBroadcast = class HTTPSockBroadcastBrowser {
         constructor(options = {
             server: 'https://sub.domain.tld:port/path',
