@@ -175,12 +175,12 @@ function HTTPSockServer(options = {}) {
       connection.username = req.headers['x-httpsock-username'] || (req.query && req.query.username) || 'client';
     };
     connection.room = req.headers['x-httpsock-room'] || (req.query && req.query.room) || 'default';
-    connection.send = (message) => enqueueForConnection(connection, buffer);
+    connection.send = (message) => enqueueForConnection(connection, message);
     router.connections.push(connection);
     if (options.welcome) {
       try {
         const welcomeMsg = (typeof options.welcome === 'function') ? await options.welcome(connection.username) : options.welcome;
-        if (welcomeMsg !== undefined) enqueueForConnection(connection, buffer);
+        if (welcomeMsg !== undefined) enqueueForConnection(connection, welcomeMsg);
       } catch (e) { };
     };
   });
