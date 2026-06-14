@@ -73,7 +73,7 @@ function HTTPSockServer(options = {}) {
     limit: options.maxBody || '10mb',
   }));
 
-  const connections = [];
+  router.connections = [];
 
   const enqueueForConnection = (connection, buffer) => {
     if (!connection || connection.closed || connection.stream.destroyed || connection.stream.writableEnded) return;
@@ -81,14 +81,14 @@ function HTTPSockServer(options = {}) {
     drainConnection(connection);
   };
 
-  const drainConnection = (conn) => {
-    if (!conn || conn.closed || conn.stream.destroyed || conn.stream.writableEnded) return;
-    while (conn.queue.length) {
-      const message = conn.queue[0];
+  const drainConnection = (connection) => {
+    if (!connection || connection.closed || connection.stream.destroyed || connection.stream.writableEnded) return;
+    while (connection.queue.length) {
+      const message = connection.queue[0];
       try {
-        const ok = conn.stream.write(Buffer.from(message));
+        const ok = connection.stream.write(Buffer.from(message));
         if (!ok) {
-          conn.stream.once('drain', () => { if (!conn.closed) drainConnection(conn); });
+          connection.stream.once('drain', () => { if (!connection.closed) drainConnection(connection); });
           return;
         };
       } catch (err) {
@@ -96,13 +96,13 @@ function HTTPSockServer(options = {}) {
         console.error('Error writing to stream:', (err && err.stack) ? err.stack : err);
         return;
       };
-      conn.queue.shift();
-      if (conn.closed || conn.stream.destroyed || conn.stream.writableEnded) return;
+      connection.queue.shift();
+      if (connection.closed || connection.stream.destroyed || connection.stream.writableEnded) return;
     };
   };
 
   router.sendTo = (room, username, buffer) => {
-    for (const connection of connections) {
+    for (const connection of router.connections) {
       if (connection.closed) continue;
       if (room && (connection.room !== room)) continue;
       if (username && (connection.username !== username)) continue;
@@ -130,7 +130,6 @@ function HTTPSockServer(options = {}) {
     const stream = new HTTPSockStream();
     stream.pipe(res);
 
-    var closed = false;
     const connection = {
       stream,
       closed: false,
@@ -148,13 +147,12 @@ function HTTPSockServer(options = {}) {
     });
 
     req.on('close', () => {
-      closed = true;
       connection.closed = true;
       try {
         if (!stream.writableEnded && !stream.destroyed) stream.end();
       } catch (e) { };
-      const idx = connections.indexOf(connection);
-      if (idx !== -1) connections.splice(idx, 1);
+      const idx = router.connections.indexOf(connection);
+      if (idx !== -1) router.connections.splice(idx, 1);
     });
 
     try {
@@ -165,9 +163,7 @@ function HTTPSockServer(options = {}) {
       connection.username = req.headers['x-httpsock-username'] || (req.query && req.query.username) || 'client';
     };
     connection.room = req.headers['x-httpsock-room'] || (req.query && req.query.room) || 'default';
-
-    connections.push(connection);
-
+    router.connections.push(connection);
     if (options.welcome) {
       try {
         const welcomeMsg = (typeof options.welcome === 'function') ? await options.welcome(connection.username) : options.welcome;
@@ -215,7 +211,7 @@ function HTTPSockServer(options = {}) {
             router.sendToRoom(targetRoom, body);
           };
         } else {
-          for (const connection of connections) enqueueForConnection(connection, body);
+          for (const connection of router.connections) enqueueForConnection(connection, body);
         };
       } else {
         callback(authenticatedAs, `${contentType} (${body.length} bytes)`);
@@ -226,21 +222,21 @@ function HTTPSockServer(options = {}) {
             router.sendToRoom(targetRoom, body);
           };
         } else {
-          for (const connection of connections) enqueueForConnection(connection, body);
+          for (const connection of router.connections) enqueueForConnection(connection, body);
         };
       };
     } else {
       const string = (body === undefined || body === null) ? '' : String(body);
       callback(authenticatedAs, string);
-      const buf = Buffer.from(string);
+      const buffer = Buffer.from(string);
       if (targetRoom || targetUser) {
         if (targetUser) {
-          router.sendToUser(targetUser, buf);
+          router.sendToUser(targetUser, buffer);
         } else {
-          router.sendToRoom(targetRoom, buf);
+          router.sendToRoom(targetRoom, buffer);
         };
       } else {
-        for (const c of connections) enqueueForConnection(c, buf);
+        for (const connection of router.connections) enqueueForConnection(connection, buffer);
       };
     };
     res.type('text').send('OK');
