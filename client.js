@@ -5,7 +5,7 @@ const https = require('https');
 const fs = require('fs');
 const { URL } = require('url');
 
-const isNode = (typeof process !== 'undefined') && process.versions?.node;
+const isNode = (typeof process !== 'undefined') && process.versions?.node && (typeof Buffer !== 'undefined');
 
 class HTTPSockClient {
     constructor(options = {
@@ -16,13 +16,8 @@ class HTTPSockClient {
         error: ((error) => { console.error('↓', error) })
     }) {
         this.server = options.server || 'http://localhost:1234/';
-        if (options.cert && (Buffer.isBuffer(options.cert) || ((typeof options.cert === 'string') && options.cert.includes('BEGIN CERTIFICATE')))) {
+        if (options.cert && ((isNode ? Buffer.isBuffer(options.cert) : false) || ((typeof options.cert === 'string') && options.cert.includes('BEGIN CERTIFICATE')))) {
             this.cert = options.cert;
-        } else if (options.cert && (typeof options.cert === 'string') && options.cert.startsWith('http')) {
-            this.certPromise = fetch(options.cert).then(res => {
-                if (!res.ok) throw new Error(`Failed to load cert from ${options.cert}`);
-                return res.text();
-            }).catch(() => undefined);
         } else if (isNode) {
             try {
                 this.cert = fs.readFileSync((typeof options.cert === 'string') ? options.cert : './certs/chain.pem');
