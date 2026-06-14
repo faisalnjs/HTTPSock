@@ -5,6 +5,8 @@ const https = require('https');
 const fs = require('fs');
 const { URL } = require('url');
 
+const isNode = (typeof process !== 'undefined') && process.versions?.node;
+
 class HTTPSockClient {
     constructor(options = {
         server: 'https://sub.domain.tld:port/path',
@@ -13,8 +15,23 @@ class HTTPSockClient {
         close: (() => { console.log('↓ stream closed') }),
         error: ((error) => { console.error('↓', error) })
     }) {
-        this.server = options.server || 'https://sub.domain.tld:port/path';
-        this.cert = fs.readFileSync(options.cert || './certs/chain.pem');
+        this.server = options.server || 'http://localhost:1234/';
+        if (options.cert && (Buffer.isBuffer(options.cert) || ((typeof options.cert === 'string') && options.cert.includes('BEGIN CERTIFICATE')))) {
+            this.cert = options.cert;
+        } else if (options.cert && (typeof options.cert === 'string') && options.cert.startsWith('http')) {
+            this.certPromise = fetch(options.cert).then(res => {
+                if (!res.ok) throw new Error(`Failed to load cert from ${options.cert}`);
+                return res.text();
+            }).catch(() => undefined);
+        } else if (isNode) {
+            try {
+                this.cert = fs.readFileSync((typeof options.cert === 'string') ? options.cert : './certs/chain.pem');
+            } catch (e) {
+                this.cert = undefined;
+            };
+        } else {
+            this.cert = undefined;
+        };
         this.auth = options.auth;
         this.callback = options.callback || (response => console.log('←', response));
         this.close = options.close || (() => console.log('↓ stream closed'));
