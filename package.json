@@ -15,16 +15,22 @@
 			"require": "./server.js",
 			"default": "./server.js"
 		},
+		"./server.mjs": "./server.mjs",
+		"./server.js": "./server.js",
 		"./broadcast": {
 			"import": "./broadcast.mjs",
 			"require": "./broadcast.js",
 			"default": "./broadcast.js"
 		},
+		"./broadcast.mjs": "./broadcast.mjs",
+		"./broadcast.js": "./broadcast.js",
 		"./client": {
 			"import": "./client.mjs",
 			"require": "./client.js",
 			"default": "./client.js"
-		}
+		},
+		"./client.mjs": "./client.mjs",
+		"./client.js": "./client.js"
 	},
 	"keywords": [
 		"nodejs",
