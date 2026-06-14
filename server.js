@@ -75,8 +75,20 @@ function HTTPSockServer(options = {}) {
 
   router.connections = [];
 
-  const enqueueForConnection = (connection, buffer) => {
+  const enqueueForConnection = (connection, message) => {
     if (!connection || connection.closed || connection.stream.destroyed || connection.stream.writableEnded) return;
+    var buffer;
+    if (Buffer.isBuffer(message)) {
+      buffer = message;
+    } else if (typeof message === 'object') {
+      try {
+        buffer = Buffer.from(JSON.stringify(message));
+      } catch (e) {
+        buffer = Buffer.from(String(message));
+      };
+    } else {
+      buffer = Buffer.from(String(message));
+    };
     connection.queue.push(buffer);
     drainConnection(connection);
   };
@@ -163,40 +175,12 @@ function HTTPSockServer(options = {}) {
       connection.username = req.headers['x-httpsock-username'] || (req.query && req.query.username) || 'client';
     };
     connection.room = req.headers['x-httpsock-room'] || (req.query && req.query.room) || 'default';
-    connection.send = (message) => {
-      var buffer;
-      if (Buffer.isBuffer(message)) {
-        buffer = message;
-      } else if (typeof message === 'object') {
-        try {
-          buffer = Buffer.from(JSON.stringify(message));
-        } catch (e) {
-          buffer = Buffer.from(String(message));
-        };
-      } else {
-        buffer = Buffer.from(String(message));
-      };
-      enqueueForConnection(connection, buffer);
-    };
+    connection.send = (message) => enqueueForConnection(connection, buffer);
     router.connections.push(connection);
     if (options.welcome) {
       try {
         const welcomeMsg = (typeof options.welcome === 'function') ? await options.welcome(connection.username) : options.welcome;
-        if (welcomeMsg !== undefined) {
-          var buffer;
-          if (Buffer.isBuffer(welcomeMsg)) {
-            buffer = welcomeMsg;
-          } else if ((typeof welcomeMsg === 'object') && (welcomeMsg !== null)) {
-            try {
-              buffer = Buffer.from(JSON.stringify(welcomeMsg));
-            } catch (e) {
-              buffer = Buffer.from(String(welcomeMsg));
-            };
-          } else {
-            buffer = Buffer.from(String(welcomeMsg));
-          };
-          enqueueForConnection(connection, buffer);
-        };
+        if (welcomeMsg !== undefined) enqueueForConnection(connection, buffer);
       } catch (e) { };
     };
   });
