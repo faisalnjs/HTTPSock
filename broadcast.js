@@ -50,7 +50,7 @@ class HTTPSockBroadcast {
     this.auth = options.auth;
     this.err = this.err.bind(this);
     this.request = null;
-    this.connected = false;
+    this.connected = true;
   };
 
   async err(error) {
