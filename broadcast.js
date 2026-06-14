@@ -88,3 +88,5 @@ class HTTPSockBroadcast {
 };
 
 module.exports = HTTPSockBroadcast;
+
+export default { HTTPSockBroadcast };

@@ -164,3 +164,5 @@ function HTTPSockServer(options = {}) {
 };
 
 module.exports = HTTPSockServer;
+
+export default { HTTPSockServer };
