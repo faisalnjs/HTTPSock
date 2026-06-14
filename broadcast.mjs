@@ -30,6 +30,7 @@ if (isNode) {
             this.auth = options.auth;
             this.controller = null;
             this.requestPromise = null;
+            this.connected = false;
         };
 
         _makeAuthHeader() {
@@ -48,6 +49,7 @@ if (isNode) {
         };
 
         async err(error) {
+            this.connected = false;
             if (error === 'ended') {
                 try {
                     await this.close();
@@ -60,6 +62,7 @@ if (isNode) {
         };
 
         async send(data) {
+            this.connected = true;
             var body = data;
             var contentType = 'application/octet-stream';
             if (data instanceof Blob) {
@@ -95,6 +98,7 @@ if (isNode) {
                 });
                 const text = await resp.text();
                 try {
+                    this.connected = false;
                     await this.callback(text);
                 } catch (e) { };
             } catch (err) {
@@ -112,6 +116,7 @@ if (isNode) {
                     this.controller.abort();
                 } catch (e) { };
             };
+            this.connected = false;
         };
     };
 };

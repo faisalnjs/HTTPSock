@@ -50,9 +50,11 @@ class HTTPSockBroadcast {
     this.auth = options.auth;
     this.err = this.err.bind(this);
     this.request = null;
+    this.connected = false;
   };
 
   async err(error) {
+    this.connected = false;
     if (error === 'ended') {
       await this.close();
     } else {
@@ -61,6 +63,7 @@ class HTTPSockBroadcast {
   };
 
   send(data) {
+    this.connected = true;
     const url = new URL(this.server);
     var body = data;
     var contentType = 'application/octet-stream';
@@ -91,7 +94,7 @@ class HTTPSockBroadcast {
       res => {
         var response = '';
         res.on('data', r => (response += r));
-        res.on('end', async () => await this.callback(response));
+        res.on('end', async () => { this.connected = false; await this.callback(response); });
       }
     );
     this.request.on('error', this.err);
@@ -101,6 +104,7 @@ class HTTPSockBroadcast {
 
   stop() {
     if (this.request) this.request.destroy('ended');
+    this.connected = false;
   };
 };
 
