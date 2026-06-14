@@ -37,6 +37,7 @@ if (isNode) {
         };
 
         async stream() {
+            console.log('↑ connecting...');
             if (this.running) return;
             this.running = true;
             const headers = {};
