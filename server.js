@@ -163,6 +163,21 @@ function HTTPSockServer(options = {}) {
       connection.username = req.headers['x-httpsock-username'] || (req.query && req.query.username) || 'client';
     };
     connection.room = req.headers['x-httpsock-room'] || (req.query && req.query.room) || 'default';
+    connection.send = (message) => {
+      var buffer;
+      if (Buffer.isBuffer(message)) {
+        buffer = message;
+      } else if (typeof message === 'object') {
+        try {
+          buffer = Buffer.from(JSON.stringify(message));
+        } catch (e) {
+          buffer = Buffer.from(String(message));
+        };
+      } else {
+        buffer = Buffer.from(String(message));
+      };
+      enqueueForConnection(connection, buffer);
+    };
     router.connections.push(connection);
     if (options.welcome) {
       try {
