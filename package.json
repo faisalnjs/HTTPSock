@@ -10,9 +10,21 @@
 		"client": "node demos/client/index.js"
 	},
 	"exports": {
-		"./server": "./server.js",
-		"./broadcast": "./broadcast.js",
-		"./client": "./client.js"
+		"./server": {
+			"import": "./server.mjs",
+			"require": "./server.js",
+			"default": "./server.js"
+		},
+		"./broadcast": {
+			"import": "./broadcast.mjs",
+			"require": "./broadcast.js",
+			"default": "./broadcast.js"
+		},
+		"./client": {
+			"import": "./client.mjs",
+			"require": "./client.js",
+			"default": "./client.js"
+		}
 	},
 	"keywords": [
 		"nodejs",

@@ -74,6 +74,7 @@ The server exposes a function that returns an Express `Router`. Example usage in
 ```js
 const express = require('express');
 const HTTPSockServer = require('httpsock/server');
+// import HTTPSockServer from 'httpsock/server.mjs';
 
 const app = express();
 app.use('/httpsock', HTTPSockServer({
@@ -109,6 +110,7 @@ Example:
 
 ```js
 const HTTPSockBroadcast = require('httpsock/broadcast');
+// import HTTPSockBroadcast from 'httpsock/broadcast.mjs';
 
 const broadcaster = new HTTPSockBroadcast({
     server: 'http://localhost:1234/httpsock',
@@ -138,6 +140,7 @@ Example:
 
 ```js
 const HTTPSockClient = require('httpsock/client');
+// import HTTPSockClient from 'httpsock/client.mjs';
 
 const client = new HTTPSockClient({
     server: 'http://localhost:1234/httpsock',

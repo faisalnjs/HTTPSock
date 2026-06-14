@@ -118,5 +118,3 @@ class HTTPSockClient {
 };
 
 module.exports = HTTPSockClient;
-
-export default { HTTPSockClient };
