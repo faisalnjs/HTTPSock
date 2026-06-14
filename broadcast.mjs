@@ -98,7 +98,6 @@ if (isNode) {
                 });
                 const text = await resp.text();
                 try {
-                    this.connected = false;
                     await this.callback(text);
                 } catch (e) { };
             } catch (err) {

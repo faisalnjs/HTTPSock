@@ -94,7 +94,9 @@ class HTTPSockBroadcast {
       res => {
         var response = '';
         res.on('data', r => (response += r));
-        res.on('end', async () => { this.connected = false; await this.callback(response); });
+        res.on('end', async () => {
+          await this.callback(response);
+        });
       }
     );
     this.request.on('error', this.err);
