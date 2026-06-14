@@ -30,7 +30,7 @@ if (isNode) {
             this.auth = options.auth;
             this.controller = null;
             this.requestPromise = null;
-            this.connected = false;
+            this.connected = true;
         };
 
         _makeAuthHeader() {
