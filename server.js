@@ -113,18 +113,15 @@ function HTTPSockServer(options = {}) {
     };
   };
 
-  router.sendTo = (room, username, message) => {
+  router.sendTo = (username, message) => {
     for (const connection of router.connections) {
       if (connection.closed) continue;
-      if (room && (connection.room !== room)) continue;
       if (username && (connection.username !== username)) continue;
       enqueueForConnection(connection, message);
     };
   };
 
-  router.sendToRoom = (room, message) => router.sendTo(room, undefined, message);
-  router.sendToUser = (username, message) => router.sendTo(undefined, username, message);
-  router.sendAll = (message) => router.sendTo(undefined, undefined, message);
+  router.send = (message) => router.sendTo(undefined, message);
 
   router.get('/', async (req, res) => {
     if (requireAuth) {
@@ -174,7 +171,6 @@ function HTTPSockServer(options = {}) {
     } catch (e) {
       connection.username = req.headers['x-httpsock-username'] || (req.query && req.query.username) || 'client';
     };
-    connection.room = req.headers['x-httpsock-room'] || (req.query && req.query.room) || 'default';
     connection.send = (message) => enqueueForConnection(connection, message);
     router.connections.push(connection);
     if (options.welcome) {
@@ -197,7 +193,6 @@ function HTTPSockServer(options = {}) {
     };
     const body = req.body;
     const contentType = req.headers['content-type'] || '';
-    const targetRoom = req.headers['x-httpsock-room'];
     const targetUser = req.headers['x-httpsock-username'];
     const noBroadcastHeader = (req.headers['x-httpsock-no-broadcast'] || '').toString().toLowerCase();
     const noBroadcastQuery = (req.query && (req.query.no_broadcast || req.query.noBroadcast)) ? String(req.query.no_broadcast || req.query.noBroadcast).toString().toLowerCase() : undefined;
@@ -207,12 +202,8 @@ function HTTPSockServer(options = {}) {
         const string = body.toString();
         callback(authenticatedAs, string);
         if (!suppressBroadcast) {
-          if (targetRoom || targetUser) {
-            if (targetUser) {
-              router.sendToUser(targetUser, body);
-            } else {
-              router.sendToRoom(targetRoom, body);
-            };
+          if (targetUser) {
+            router.sendToUser(targetUser, body);
           } else {
             for (const connection of router.connections) enqueueForConnection(connection, body);
           };
@@ -220,12 +211,8 @@ function HTTPSockServer(options = {}) {
       } else {
         callback(authenticatedAs, `${contentType} (${body.length} bytes)`);
         if (!suppressBroadcast) {
-          if (targetRoom || targetUser) {
-            if (targetUser) {
-              router.sendToUser(targetUser, body);
-            } else {
-              router.sendToRoom(targetRoom, body);
-            };
+          if (targetUser) {
+            router.sendToUser(targetUser, body);
           } else {
             for (const connection of router.connections) enqueueForConnection(connection, body);
           };
@@ -236,12 +223,8 @@ function HTTPSockServer(options = {}) {
       callback(authenticatedAs, string);
       const buffer = Buffer.from(string);
       if (!suppressBroadcast) {
-        if (targetRoom || targetUser) {
-          if (targetUser) {
-            router.sendToUser(targetUser, buffer);
-          } else {
-            router.sendToRoom(targetRoom, buffer);
-          };
+        if (targetUser) {
+          router.sendToUser(targetUser, buffer);
         } else {
           for (const connection of router.connections) enqueueForConnection(connection, buffer);
         };

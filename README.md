@@ -109,10 +109,8 @@ app.listen(3000, () => console.log('listening on :3000'));
 The router returned by `HTTPSockServer()` exposes the following:
 
 ```js
-router.sendAll(Buffer.from('broadcast')); // send to all clients
-router.sendToRoom('room1', Buffer.from('room message')); // send to a room
-router.sendToUser('username', Buffer.from('private message')); // send to a username
-router.sendTo('room1', 'username', Buffer.from('to username in room1')); // send to a username in a room
+router.send(Buffer.from('broadcast')); // send to all clients
+router.sendTo('username', Buffer.from('private message')); // send to username
 ```
 
 ### broadcaster
