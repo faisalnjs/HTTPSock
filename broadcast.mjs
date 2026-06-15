@@ -109,6 +109,122 @@ if (isNode) {
             };
         };
 
+        /**
+         * sendTo(username, data)
+         *
+         * Send a message targeted at a specific connected client username by
+         * including the `x-httpsock-username` header. This is the supported way
+         * to target delivery; manually adding headers or query parameters to
+         * the `server` URL for targeting has been removed.
+         *
+         * @param {string} username
+         * @param {Blob|ArrayBuffer|Object|string} data
+         */
+        async sendTo(username, data) {
+            this.connected = true;
+            var body = data;
+            var contentType = 'application/octet-stream';
+            if (data instanceof Blob) {
+                body = data;
+                contentType = data.type || 'application/octet-stream';
+            } else if ((data instanceof ArrayBuffer) || ArrayBuffer.isView(data)) {
+                body = (data instanceof ArrayBuffer) ? new Blob([data]) : new Blob([data.buffer]);
+                contentType = 'application/octet-stream';
+            } else if ((typeof data === 'object') && (data !== null)) {
+                try {
+                    body = JSON.stringify(data);
+                    contentType = 'application/json';
+                } catch (e) {
+                    body = String(data);
+                    contentType = 'text/plain';
+                };
+            } else {
+                body = String(((data === undefined) || (data === null)) ? '' : data);
+                contentType = 'text/plain';
+            };
+            const headers = {
+                'Content-Type': contentType,
+                'x-httpsock-username': String(username),
+            };
+            const auth = this._makeAuthHeader();
+            if (auth) headers['Authorization'] = auth;
+            this.controller = new AbortController();
+            try {
+                const resp = await fetch(this.server, {
+                    method: 'POST',
+                    headers,
+                    body,
+                    signal: this.controller.signal,
+                });
+                const text = await resp.text();
+                try {
+                    await this.callback(text);
+                } catch (e) { };
+            } catch (err) {
+                if (err && err.name === 'AbortError') {
+                    await this.err('ended');
+                } else {
+                    await this.err(err);
+                };
+            };
+        };
+
+        /**
+         * sendQuiet(data)
+         *
+         * Send a message that the server should process in its callback but not forward to connected clients.
+         *
+         * @param {Blob|ArrayBuffer|Object|string} data
+         */
+        async sendQuiet(data) {
+            this.connected = true;
+            var body = data;
+            var contentType = 'application/octet-stream';
+            if (data instanceof Blob) {
+                body = data;
+                contentType = data.type || 'application/octet-stream';
+            } else if ((data instanceof ArrayBuffer) || ArrayBuffer.isView(data)) {
+                body = (data instanceof ArrayBuffer) ? new Blob([data]) : new Blob([data.buffer]);
+                contentType = 'application/octet-stream';
+            } else if ((typeof data === 'object') && (data !== null)) {
+                try {
+                    body = JSON.stringify(data);
+                    contentType = 'application/json';
+                } catch (e) {
+                    body = String(data);
+                    contentType = 'text/plain';
+                };
+            } else {
+                body = String(((data === undefined) || (data === null)) ? '' : data);
+                contentType = 'text/plain';
+            };
+            const headers = {
+                'Content-Type': contentType,
+                'x-httpsock-no-broadcast': '1',
+            };
+            const auth = this._makeAuthHeader();
+            if (auth) headers['Authorization'] = auth;
+            this.controller = new AbortController();
+            try {
+                const resp = await fetch(this.server, {
+                    method: 'POST',
+                    headers,
+                    body,
+                    signal: this.controller.signal,
+                });
+                const text = await resp.text();
+                try {
+                    await this.callback(text);
+                } catch (e) { };
+            } catch (err) {
+                if (err && err.name === 'AbortError') {
+                    await this.err('ended');
+                } else {
+                    await this.err(err);
+                };
+            };
+        };
+
         stop() {
             if (this.controller) {
                 try {

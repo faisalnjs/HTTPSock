@@ -147,16 +147,18 @@ broadcaster.stop();
 
 #### Targeted Delivery (broadcaster)
 
-Broadcasters can target messages to a room or a specific username by setting HTTP headers or query parameters on the POST request:
-
-- Headers `x-httpsock-username` and `x-httpsock-room` or `?username=` / `?room=` query parameters.
+Use the `broadcaster.sendTo(username, data)` function to send a message to a specific connected client by username.
 
 ```js
-fetch('https://example.com/httpsock', {
-  method: 'POST',
-  headers: { 'x-httpsock-room': 'room1', 'Content-Type': 'application/json' },
-  body: JSON.stringify({ type: 'room-message', text: 'hello room1' })
-});
+broadcaster.sendTo('username', 'hello username');
+```
+
+#### Server-only Delivery
+
+Use the `broadcaster.sendQuiet(data)` function to send a message to the server for server-side processing only (for example, control or metadata messages) without broadcasting it to connected clients.
+
+```js
+broadcaster.sendQuiet('hello server');
 ```
 
 ### client

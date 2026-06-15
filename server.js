@@ -113,18 +113,18 @@ function HTTPSockServer(options = {}) {
     };
   };
 
-  router.sendTo = (room, username, buffer) => {
+  router.sendTo = (room, username, message) => {
     for (const connection of router.connections) {
       if (connection.closed) continue;
       if (room && (connection.room !== room)) continue;
       if (username && (connection.username !== username)) continue;
-      enqueueForConnection(connection, buffer);
+      enqueueForConnection(connection, message);
     };
   };
 
-  router.sendToRoom = (room, buffer) => router.sendTo(room, undefined, buffer);
-  router.sendToUser = (username, buffer) => router.sendTo(undefined, username, buffer);
-  router.sendAll = (buffer) => router.sendTo(undefined, undefined, buffer);
+  router.sendToRoom = (room, message) => router.sendTo(room, undefined, message);
+  router.sendToUser = (username, message) => router.sendTo(undefined, username, message);
+  router.sendAll = (message) => router.sendTo(undefined, undefined, message);
 
   router.get('/', async (req, res) => {
     if (requireAuth) {
@@ -199,44 +199,53 @@ function HTTPSockServer(options = {}) {
     const contentType = req.headers['content-type'] || '';
     const targetRoom = req.headers['x-httpsock-room'];
     const targetUser = req.headers['x-httpsock-username'];
+    const noBroadcastHeader = (req.headers['x-httpsock-no-broadcast'] || '').toString().toLowerCase();
+    const noBroadcastQuery = (req.query && (req.query.no_broadcast || req.query.noBroadcast)) ? String(req.query.no_broadcast || req.query.noBroadcast).toString().toLowerCase() : undefined;
+    const suppressBroadcast = (noBroadcastHeader === '1' || noBroadcastHeader === 'true' || noBroadcastHeader === 'yes' || noBroadcastQuery === '1' || noBroadcastQuery === 'true' || noBroadcastQuery === 'yes');
     if (Buffer.isBuffer(body)) {
       if (contentType && (contentType.indexOf('application/json') !== -1)) {
         const string = body.toString();
         callback(authenticatedAs, string);
-        if (targetRoom || targetUser) {
-          if (targetUser) {
-            router.sendToUser(targetUser, body);
+        if (!suppressBroadcast) {
+          if (targetRoom || targetUser) {
+            if (targetUser) {
+              router.sendToUser(targetUser, body);
+            } else {
+              router.sendToRoom(targetRoom, body);
+            };
           } else {
-            router.sendToRoom(targetRoom, body);
+            for (const connection of router.connections) enqueueForConnection(connection, body);
           };
-        } else {
-          for (const connection of router.connections) enqueueForConnection(connection, body);
-        };
+        }
       } else {
         callback(authenticatedAs, `${contentType} (${body.length} bytes)`);
-        if (targetRoom || targetUser) {
-          if (targetUser) {
-            router.sendToUser(targetUser, body);
+        if (!suppressBroadcast) {
+          if (targetRoom || targetUser) {
+            if (targetUser) {
+              router.sendToUser(targetUser, body);
+            } else {
+              router.sendToRoom(targetRoom, body);
+            };
           } else {
-            router.sendToRoom(targetRoom, body);
+            for (const connection of router.connections) enqueueForConnection(connection, body);
           };
-        } else {
-          for (const connection of router.connections) enqueueForConnection(connection, body);
-        };
+        }
       };
     } else {
       const string = (body === undefined || body === null) ? '' : String(body);
       callback(authenticatedAs, string);
       const buffer = Buffer.from(string);
-      if (targetRoom || targetUser) {
-        if (targetUser) {
-          router.sendToUser(targetUser, buffer);
+      if (!suppressBroadcast) {
+        if (targetRoom || targetUser) {
+          if (targetUser) {
+            router.sendToUser(targetUser, buffer);
+          } else {
+            router.sendToRoom(targetRoom, buffer);
+          };
         } else {
-          router.sendToRoom(targetRoom, buffer);
+          for (const connection of router.connections) enqueueForConnection(connection, buffer);
         };
-      } else {
-        for (const connection of router.connections) enqueueForConnection(connection, buffer);
-      };
+      }
     };
     res.type('text').send('OK');
   });
