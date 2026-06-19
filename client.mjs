@@ -1,8 +1,10 @@
 const isNode = (typeof process !== 'undefined') && process.versions && process.versions.node;
 var HTTPSockClient;
 if (isNode) {
-    const mod = await import('./client.js');
-    HTTPSockClient = mod && (mod.default || mod);
+    (async () => {
+        const mod = await import('./client.js');
+        HTTPSockClient = mod && (mod.default || mod);
+    })();
 } else {
     /**
      * HTTPSockClient (browser)

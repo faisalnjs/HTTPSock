@@ -1,8 +1,10 @@
 const isNode = (typeof process !== 'undefined') && process.versions && process.versions.node;
 var HTTPSockBroadcast;
 if (isNode) {
-    const mod = await import('./broadcast.js');
-    HTTPSockBroadcast = mod && (mod.default || mod);
+    (async () => {
+        const mod = await import('./broadcast.js');
+        HTTPSockBroadcast = mod && (mod.default || mod);
+    })();
 } else {
     /**
      * HTTPSockBroadcast (browser)
