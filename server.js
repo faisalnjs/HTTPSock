@@ -19,9 +19,11 @@ class HTTPSockStream extends Transform {
  * @param {Object} [options]
  * @param {number} [options.maxBody='10mb'] - Maximum allowed body size for POST requests.
  * @param {boolean} [options.auth=false] - Whether to require authentication for clients and broadcasters.
- * @param {Array} [options.clients=[]] - List of allowed client credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
- * @param {Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
+ * @param {function|Array} [options.clients=[]] - List of allowed client credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
+ * @param {function|Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
  * @param {function} [options.callback=((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message))] - Callback function with successful data sent to the server. Receives two parameters: authenticatedAs, message.
+ * @param {string|function} [options.welcome] - Optional welcome message to send to clients upon connection. Can be a string or a function that returns a string (or undefined to send nothing) when given the parameter: username.
+ * @param {function} [options.error=((err) => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err))] - Callback function for errors. Receives one parameter: err.
  * @returns {Router}
  */
 function HTTPSockServer(options = {}) {
@@ -30,6 +32,7 @@ function HTTPSockServer(options = {}) {
   const allowedClients = options.clients || [];
   const allowedBroadcasts = options.broadcasts || [];
   const callback = options.callback || ((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message));
+  const errorHandler = options.error || ((err) => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err));
 
   const parseBasic = (header) => {
     if (!header || (typeof header !== 'string')) return null;
@@ -42,6 +45,7 @@ function HTTPSockServer(options = {}) {
       if (sep === -1) return null;
       return { username: decoded.slice(0, sep), password: decoded.slice(sep + 1) };
     } catch (e) {
+      errorHandler(e);
       return null;
     };
   };
@@ -51,7 +55,9 @@ function HTTPSockServer(options = {}) {
     if (typeof list === 'function') {
       try {
         return await list(credentials.username, credentials.password);
-      } catch { };
+      } catch (e) {
+        errorHandler(e);
+      };
     } else {
       for (const item of list) {
         if (!item) continue;
@@ -104,8 +110,8 @@ function HTTPSockServer(options = {}) {
           return;
         };
       } catch (err) {
-        if (err && err.code === 'ERR_STREAM_WRITE_AFTER_END') return;
-        console.error('Error writing to stream:', (err && err.stack) ? err.stack : err);
+        if (err && (err.code === 'ERR_STREAM_WRITE_AFTER_END')) return;
+        errorHandler(e);
         return;
       };
       connection.queue.shift();
@@ -152,14 +158,18 @@ function HTTPSockServer(options = {}) {
       console.error('HTTPSockStream error:', (err && err.stack) ? err.stack : err);
       try {
         stream.destroy();
-      } catch (e) { };
+      } catch (e) {
+        errorHandler(e);
+      };
     });
 
     req.on('close', () => {
       connection.closed = true;
       try {
         if (!stream.writableEnded && !stream.destroyed) stream.end();
-      } catch (e) { };
+      } catch (e) {
+        errorHandler(e);
+      };
       const idx = router.connections.indexOf(connection);
       if (idx !== -1) router.connections.splice(idx, 1);
     });
@@ -177,7 +187,9 @@ function HTTPSockServer(options = {}) {
       try {
         const welcomeMsg = (typeof options.welcome === 'function') ? await options.welcome(connection.username) : options.welcome;
         if (welcomeMsg !== undefined) enqueueForConnection(connection, welcomeMsg);
-      } catch (e) { };
+      } catch (e) {
+        errorHandler(e);
+      };
     };
   });
 
