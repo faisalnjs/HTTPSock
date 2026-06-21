@@ -1,6 +1,6 @@
 {
 	"name": "httpsock",
-	"version": "1.0.9",
+	"version": "1.1.0",
 	"description": "WebSocket-like data streaming over HTTP/S with Express.js and Node.js. Supports multiple servers, broadcasters, and clients, without the WebSocket protocol.",
 	"main": "index.js",
 	"scripts": {
