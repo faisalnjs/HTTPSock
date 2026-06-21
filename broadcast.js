@@ -50,7 +50,7 @@ class HTTPSockBroadcast {
     this.auth = options.auth;
     this.err = this.err.bind(this);
     this.request = null;
-    this.connected = true;
+    this.connected = false;
   };
 
   async err(error) {
@@ -63,7 +63,6 @@ class HTTPSockBroadcast {
   };
 
   send(data) {
-    this.connected = true;
     const url = new URL(this.server);
     var body = data;
     var contentType = 'application/octet-stream';
@@ -95,6 +94,12 @@ class HTTPSockBroadcast {
         var response = '';
         res.on('data', r => (response += r));
         res.on('end', async () => {
+          const status = (res && res.statusCode) ? res.statusCode : 0;
+          if ((status < 200) || (status >= 300)) {
+            await this.err(new Error('HTTP ' + status + ': ' + response));
+            return;
+          };
+          this.connected = true;
           await this.callback(response);
         });
       }
@@ -116,7 +121,6 @@ class HTTPSockBroadcast {
    * @param {Buffer|string|Object} data
    */
   sendTo(username, data) {
-    this.connected = true;
     const url = new URL(this.server);
     var body = data;
     var contentType = 'application/octet-stream';
@@ -149,6 +153,12 @@ class HTTPSockBroadcast {
         var response = '';
         res.on('data', r => (response += r));
         res.on('end', async () => {
+          const status = (res && res.statusCode) ? res.statusCode : 0;
+          if ((status < 200) || (status >= 300)) {
+            await this.err(new Error('HTTP ' + status + ': ' + response));
+            return;
+          };
+          this.connected = true;
           await this.callback(response);
         });
       }
@@ -166,7 +176,6 @@ class HTTPSockBroadcast {
    * @param {Buffer|string|Object} data
    */
   sendQuiet(data) {
-    this.connected = true;
     const url = new URL(this.server);
     var body = data;
     var contentType = 'application/octet-stream';
@@ -199,6 +208,12 @@ class HTTPSockBroadcast {
         var response = '';
         res.on('data', r => (response += r));
         res.on('end', async () => {
+          const status = (res && res.statusCode) ? res.statusCode : 0;
+          if ((status < 200) || (status >= 300)) {
+            await this.err(new Error('HTTP ' + status + ': ' + response));
+            return;
+          };
+          this.connected = true;
           await this.callback(response);
         });
       }

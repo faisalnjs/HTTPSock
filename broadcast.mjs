@@ -32,7 +32,7 @@ if (isNode) {
             this.auth = options.auth;
             this.controller = null;
             this.requestPromise = null;
-            this.connected = true;
+            this.connected = false;
         };
 
         _makeAuthHeader() {
@@ -64,7 +64,6 @@ if (isNode) {
         };
 
         async send(data) {
-            this.connected = true;
             var body = data;
             var contentType = 'application/octet-stream';
             if (data instanceof Blob) {
@@ -99,6 +98,11 @@ if (isNode) {
                     signal: this.controller.signal,
                 });
                 const text = await resp.text();
+                this.connected = true;
+                if (!resp.ok) {
+                    await this.err(new Error('HTTP ' + resp.status + ': ' + text));
+                    return;
+                };
                 try {
                     await this.callback(text);
                 } catch (e) { };
@@ -123,7 +127,6 @@ if (isNode) {
          * @param {Blob|ArrayBuffer|Object|string} data
          */
         async sendTo(username, data) {
-            this.connected = true;
             var body = data;
             var contentType = 'application/octet-stream';
             if (data instanceof Blob) {
@@ -159,6 +162,11 @@ if (isNode) {
                     signal: this.controller.signal,
                 });
                 const text = await resp.text();
+                this.connected = true;
+                if (!resp.ok) {
+                    await this.err(new Error('HTTP ' + resp.status + ': ' + text));
+                    return;
+                };
                 try {
                     await this.callback(text);
                 } catch (e) { };
@@ -179,7 +187,6 @@ if (isNode) {
          * @param {Blob|ArrayBuffer|Object|string} data
          */
         async sendQuiet(data) {
-            this.connected = true;
             var body = data;
             var contentType = 'application/octet-stream';
             if (data instanceof Blob) {
@@ -215,6 +222,11 @@ if (isNode) {
                     signal: this.controller.signal,
                 });
                 const text = await resp.text();
+                this.connected = true;
+                if (!resp.ok) {
+                    await this.err(new Error('HTTP ' + resp.status + ': ' + text));
+                    return;
+                };
                 try {
                     await this.callback(text);
                 } catch (e) { };
