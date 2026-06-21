@@ -87,7 +87,8 @@ app.use('/httpsock', HTTPSockServer({
     },
     callback: ((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message)),
     welcome: username => `Welcome, ${username}!`, // optional welcome message for clients
-    error: (err => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err)) // optional error handler
+    error: (err => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err)), // optional error handler
+    broadcastReturn: ((authenticatedAs, req) => 'OK') // optional POST request response handler
 }));
 
 app.listen(3000, () => console.log('listening on :3000'));
@@ -105,6 +106,7 @@ app.listen(3000, () => console.log('listening on :3000'));
 - The `callback` function is called with each incoming POST body, after authentication. authenticatedAs and response are passed in, representing the authenticated broadcaster and their message respectively.
 - The `welcome` function or string/Buffer is sent to each client immediately after they connect.
 - The `error` function is called with any server errors.
+- The `broadcastReturn` object, string or function is sent as the response to each broadcaster POST request after processing.
 
 #### Targeted Delivery (server)
 

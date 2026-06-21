@@ -1,6 +1,7 @@
 "use strict";
 
 const { Router } = require('express');
+const { type } = require('os');
 const { Transform } = require('stream');
 
 class HTTPSockStream extends Transform {
@@ -24,6 +25,7 @@ class HTTPSockStream extends Transform {
  * @param {function} [options.callback=((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message))] - Callback function with successful data sent to the server. Receives two parameters: authenticatedAs, message.
  * @param {string|function} [options.welcome] - Optional welcome message to send to clients upon connection. Can be a string or a function that returns a string (or undefined to send nothing) when given the parameter: username.
  * @param {function} [options.error=((err) => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err))] - Callback function for errors. Receives one parameter: err.
+ * @param {Object|string|function} [options.broadcastReturn='OK'] - Optional object, string or function that returns a string or JSON object to send as the response to broadcaster POST requests after processing. Receives two parameters if a function: authenticatedAs, req.
  * @returns {Router}
  */
 function HTTPSockServer(options = {}) {
@@ -33,6 +35,7 @@ function HTTPSockServer(options = {}) {
   const allowedBroadcasts = options.broadcasts || [];
   const callback = options.callback || ((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message));
   const errorHandler = options.error || ((err) => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err));
+  const broadcastReturnHandler = options.broadcastReturn || ((authenticatedAs, req) => 'OK');
 
   const parseBasic = (header) => {
     if (!header || (typeof header !== 'string')) return null;
@@ -219,7 +222,7 @@ function HTTPSockServer(options = {}) {
           } else {
             for (const connection of router.connections) enqueueForConnection(connection, body);
           };
-        }
+        };
       } else {
         callback(authenticatedAs, `${contentType} (${body.length} bytes)`);
         if (!suppressBroadcast) {
@@ -228,7 +231,7 @@ function HTTPSockServer(options = {}) {
           } else {
             for (const connection of router.connections) enqueueForConnection(connection, body);
           };
-        }
+        };
       };
     } else {
       const string = (body === undefined || body === null) ? '' : String(body);
@@ -240,9 +243,25 @@ function HTTPSockServer(options = {}) {
         } else {
           for (const connection of router.connections) enqueueForConnection(connection, buffer);
         };
-      }
+      };
     };
-    res.type('text').send('OK');
+    if (typeof broadcastReturnHandler === 'function') {
+      try {
+        const result = await broadcastReturnHandler(authenticatedAs, req);
+        if (result === undefined) {
+          return res.status(204).send();
+        } else if (typeof result === 'object') {
+          return res.json(result);
+        } else {
+          return res.type('text').send(String(result));
+        };
+      } catch (e) {
+        errorHandler(e);
+        return res.type('text').send('OK');
+      };
+    } else {
+      return res.type('text').send('OK');
+    };
   });
 
   return router;

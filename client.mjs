@@ -132,8 +132,8 @@ if (isNode) {
                                 await this.error(err);
                             } catch (e) { };
                         };
-                    }
-                }
+                    };
+                };
             } catch (err) {
                 if (err && (err.name === 'AbortError')) {
                     try {
