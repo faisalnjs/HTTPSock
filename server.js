@@ -213,25 +213,19 @@ function HTTPSockServer(options = {}) {
     var callbackString = '';
     var broadcastReturn = null;
     if (Buffer.isBuffer(body)) {
-      if (contentType && (contentType.indexOf('application/json') !== -1)) {
+      if (contentType && ((contentType.indexOf('application/json') !== -1) || ((contentType.indexOf('text/') !== -1)))) {
         callbackString = body.toString();
-        broadcastReturn = callback(authenticatedAs, callbackString);
-        if (!suppressBroadcast) {
-          if (targetUser) {
-            router.sendToUser(targetUser, body);
-          } else {
-            for (const connection of router.connections) enqueueForConnection(connection, body);
-          };
-        };
-      } else {
+      } else if (contentType) {
         callbackString = `${contentType} (${body.length} bytes)`;
-        broadcastReturn = callback(authenticatedAs, callbackString);
-        if (!suppressBroadcast) {
-          if (targetUser) {
-            router.sendToUser(targetUser, body);
-          } else {
-            for (const connection of router.connections) enqueueForConnection(connection, body);
-          };
+      } else {
+        callbackString = `${body.length} bytes`;
+      };
+      broadcastReturn = callback(authenticatedAs, callbackString);
+      if (!suppressBroadcast) {
+        if (targetUser) {
+          router.sendToUser(targetUser, body);
+        } else {
+          for (const connection of router.connections) enqueueForConnection(connection, body);
         };
       };
     } else {
