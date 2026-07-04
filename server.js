@@ -22,10 +22,9 @@ class HTTPSockStream extends Transform {
  * @param {boolean} [options.auth=false] - Whether to require authentication for clients and broadcasters.
  * @param {function|Array} [options.clients=[]] - List of allowed client credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
  * @param {function|Array} [options.broadcasts=[]] - List of allowed broadcaster credentials. Each item can be an object with `username` and `password` properties, an array of `[username, password]`, or a string in the format 'username:password'. Alternatively, can be a function that returns false or the authenticated username when given parameters: username, password.
- * @param {function} [options.callback=((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message))] - Callback function with successful data sent to the server. Receives two parameters: authenticatedAs, message.
+ * @param {function} [options.callback=((authenticatedAs, message, req) => console.log(`←→ ${authenticatedAs}:`, message))] - Callback function with successful data sent to the server. Receives three parameters: authenticatedAs, message, req.
  * @param {string|function} [options.welcome] - Optional welcome message to send to clients upon connection. Can be a string or a function that returns a string (or undefined to send nothing) when given the parameter: username.
  * @param {function} [options.error=((err) => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err))] - Callback function for errors. Receives one parameter: err.
- * @param {Object|string|function} [options.broadcastReturn='OK'] - Optional object, string or function that returns a string or JSON object to send as the response to broadcaster POST requests after processing. Receives three parameters if a function: authenticatedAs, message, req.
  * @returns {Router}
  */
 function HTTPSockServer(options = {}) {
@@ -35,7 +34,6 @@ function HTTPSockServer(options = {}) {
   const allowedBroadcasts = options.broadcasts || [];
   const callback = options.callback || ((authenticatedAs, message) => console.log(`←→ ${authenticatedAs}:`, message));
   const errorHandler = options.error || ((err) => console.error('HTTPSockServer error:', (err && err.stack) ? err.stack : err));
-  const broadcastReturnHandler = options.broadcastReturn || ((authenticatedAs, message, req) => 'OK');
 
   const parseBasic = (header) => {
     if (!header || (typeof header !== 'string')) return null;
@@ -213,10 +211,11 @@ function HTTPSockServer(options = {}) {
     const noBroadcastQuery = (req.query && (req.query.no_broadcast || req.query.noBroadcast)) ? String(req.query.no_broadcast || req.query.noBroadcast).toString().toLowerCase() : undefined;
     const suppressBroadcast = (noBroadcastHeader === '1' || noBroadcastHeader === 'true' || noBroadcastHeader === 'yes' || noBroadcastQuery === '1' || noBroadcastQuery === 'true' || noBroadcastQuery === 'yes');
     var callbackString = '';
+    var broadcastReturn = null;
     if (Buffer.isBuffer(body)) {
       if (contentType && (contentType.indexOf('application/json') !== -1)) {
         callbackString = body.toString();
-        callback(authenticatedAs, callbackString);
+        broadcastReturn = callback(authenticatedAs, callbackString);
         if (!suppressBroadcast) {
           if (targetUser) {
             router.sendToUser(targetUser, body);
@@ -226,7 +225,7 @@ function HTTPSockServer(options = {}) {
         };
       } else {
         callbackString = `${contentType} (${body.length} bytes)`;
-        callback(authenticatedAs, callbackString);
+        broadcastReturn = callback(authenticatedAs, callbackString);
         if (!suppressBroadcast) {
           if (targetUser) {
             router.sendToUser(targetUser, body);
@@ -237,7 +236,7 @@ function HTTPSockServer(options = {}) {
       };
     } else {
       callbackString = (body === undefined || body === null) ? '' : String(body);
-      callback(authenticatedAs, callbackString);
+      broadcastReturn = callback(authenticatedAs, callbackString);
       const buffer = Buffer.from(callbackString);
       if (!suppressBroadcast) {
         if (targetUser) {
@@ -247,15 +246,12 @@ function HTTPSockServer(options = {}) {
         };
       };
     };
-    if (typeof broadcastReturnHandler === 'function') {
+    if (broadcastReturn != null) {
       try {
-        const result = await broadcastReturnHandler(authenticatedAs, callbackString, req);
-        if (result === undefined) {
-          return res.status(204).send();
-        } else if (typeof result === 'object') {
-          return res.json(result);
+        if (typeof broadcastReturn === 'object') {
+          return res.json(broadcastReturn);
         } else {
-          return res.type('text').send(String(result));
+          return res.type('text').send(String(broadcastReturn));
         };
       } catch (e) {
         errorHandler(e);
