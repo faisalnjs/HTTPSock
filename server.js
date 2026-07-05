@@ -220,7 +220,7 @@ function HTTPSockServer(options = {}) {
       } else {
         callbackString = `${body.length} bytes`;
       };
-      broadcastReturn = callback(authenticatedAs, callbackString);
+      broadcastReturn = await callback(authenticatedAs, callbackString);
       if (!suppressBroadcast) {
         if (targetUser) {
           router.sendToUser(targetUser, body);
@@ -230,7 +230,7 @@ function HTTPSockServer(options = {}) {
       };
     } else {
       callbackString = (body === undefined || body === null) ? '' : String(body);
-      broadcastReturn = callback(authenticatedAs, callbackString);
+      broadcastReturn = await callback(authenticatedAs, callbackString);
       const buffer = Buffer.from(callbackString);
       if (!suppressBroadcast) {
         if (targetUser) {
